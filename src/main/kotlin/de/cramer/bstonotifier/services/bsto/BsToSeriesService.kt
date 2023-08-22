@@ -1,19 +1,20 @@
-package de.cramer.bstonotifier.services
+package de.cramer.bstonotifier.services.bsto
 
-import de.cramer.bstonotifier.entities.Episode
-import de.cramer.bstonotifier.entities.Link
-import de.cramer.bstonotifier.entities.Season
-import de.cramer.bstonotifier.entities.Series
+import de.cramer.bstonotifier.entities.bsto.BsToEpisode
+import de.cramer.bstonotifier.entities.bsto.BsToLink
+import de.cramer.bstonotifier.entities.bsto.BsToSeason
+import de.cramer.bstonotifier.entities.bsto.BsToSeries
+import de.cramer.bstonotifier.services.JsoupService
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.util.Locale
 
 @Service
-class SeriesService(
+class BsToSeriesService(
     private val jsoupService: JsoupService,
 ) {
-    fun update(series: Series) {
+    fun update(series: BsToSeries) {
         val languageString = SERIES_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[2] } ?: SEASON_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[1] } ?: return
         val language = Locale.forLanguageTag(languageString).toLanguageTag()
 
@@ -28,7 +29,7 @@ class SeriesService(
         seasonsElements.forEach { series.addSeason(it) }
     }
 
-    private fun Series.addSeason(url: String) {
+    private fun BsToSeries.addSeason(url: String) {
         SEASON_URL_REGEX.matchEntire(url)?.destructured?.let { (_, numberString, languageString) ->
             val number = numberString.toInt()
 
@@ -46,8 +47,7 @@ class SeriesService(
             val existingSeason = seasons.find { s -> s.number == number }
 
             val season = if (existingSeason == null) {
-                val season = Season(number, seasonUrl, this)
-                season
+                BsToSeason(number, seasonUrl, this)
             } else {
                 existingSeason.number = number
                 existingSeason
@@ -60,7 +60,7 @@ class SeriesService(
         }
     }
 
-    private fun Season.addEpisodes() {
+    private fun BsToSeason.addEpisodes() {
         val latestSeasonDocument = jsoupService.getDocument(url)
         val selectedLanguage = latestSeasonDocument.selectFirst(".serie .series-language [selected]")?.attr("value") ?: return
         if (selectedLanguage == series.language) {
@@ -69,16 +69,14 @@ class SeriesService(
         }
     }
 
-    private fun Season.addEpisode(element: Element) {
+    private fun BsToSeason.addEpisode(element: Element) {
         val firstCell = element.selectFirst("td") ?: return
         val name = firstCell.firstElementChild()?.attr("title")?.takeUnless { it.isBlank() } ?: return
         val number = firstCell.text().takeUnless { it.isBlank() }?.toInt() ?: return
 
         val existingEpisode = episodes.find { it.number == number }
         val episode = if (existingEpisode == null) {
-            val episode = Episode(number, name, this)
-            episodes += episode
-            episode
+            BsToEpisode(number, name, this)
         } else {
             existingEpisode.number = number
             existingEpisode.name = name
@@ -87,15 +85,20 @@ class SeriesService(
 
         val linkElements = element.select("td").lastOrNull()?.select("a") ?: return
         linkElements.forEach { episode.addLink(it) }
+
+        if (existingEpisode == null && episode.links.isNotEmpty()) {
+            // add new episode only if at least one episode was found
+            episodes += episode
+        }
     }
 
-    private fun Episode.addLink(element: Element) {
+    private fun BsToEpisode.addLink(element: Element) {
         val url = URI(element.absUrl("href"))
         val hoster = element.attr("title")
 
         val existingLink = links.find { it.hoster == hoster }
         if (existingLink == null) {
-            links += Link(0, hoster, url, this)
+            links += BsToLink(0, hoster, url, this)
         } else {
             existingLink.hoster = hoster
             existingLink.url = url
