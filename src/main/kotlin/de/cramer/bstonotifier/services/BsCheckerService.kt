@@ -3,7 +3,8 @@ package de.cramer.bstonotifier.services
 import de.cramer.bstonotifier.entities.Episode
 import de.cramer.bstonotifier.entities.Series
 import de.cramer.bstonotifier.repositories.SeriesRepository
-import jakarta.mail.internet.InternetAddress
+import de.cramer.bstonotifier.services.notifications.NotificationService
+import de.cramer.bstonotifier.utils.Message
 import kotlinx.html.a
 import kotlinx.html.body
 import kotlinx.html.div
@@ -13,10 +14,6 @@ import kotlinx.html.html
 import kotlinx.html.li
 import kotlinx.html.stream.appendHTML
 import kotlinx.html.ul
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.mail.MailProperties
-import org.springframework.mail.javamail.JavaMailSender
-import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,10 +23,7 @@ import java.io.StringWriter
 class BsCheckerService(
     private val seriesRepository: SeriesRepository,
     private val seriesService: SeriesService,
-    private val mailSender: JavaMailSender,
-    private val mailProperties: MailProperties,
-    @Value("\${check.recipient.name}") private val recipientName: String,
-    @Value("\${check.recipient.address}") private val recipientAddress: String,
+    private val notificationService: NotificationService,
 ) {
     @Transactional
     @Scheduled(cron = "\${check.schedule}")
@@ -48,15 +42,7 @@ class BsCheckerService(
 
     private fun sendNotification(newEpisodes: List<Episode>) {
         val message = createMessage(newEpisodes)
-        mailSender.send {
-            val helper = MimeMessageHelper(it)
-            if (mailProperties.properties["spring.mail.properties.mail.smtp.from"].isNullOrBlank()) {
-                helper.setFrom(mailProperties.username)
-            }
-            helper.setSubject("New episodes")
-            helper.setText(message, true)
-            helper.setTo(InternetAddress(recipientAddress, recipientName))
-        }
+        notificationService.notify(Message(message, true))
     }
 
     private fun createMessage(newEpisodes: List<Episode>): String {
