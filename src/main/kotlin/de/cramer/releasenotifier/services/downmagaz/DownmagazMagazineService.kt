@@ -1,0 +1,40 @@
+package de.cramer.releasenotifier.services.downmagaz
+
+import de.cramer.releasenotifier.entities.downmagaz.DownmagazIssue
+import de.cramer.releasenotifier.entities.downmagaz.DownmagazMagazine
+import de.cramer.releasenotifier.services.JsoupService
+import org.jsoup.nodes.Document
+import org.springframework.stereotype.Service
+import java.net.URI
+
+@Service
+class DownmagazMagazineService(
+    private val jsoupService: JsoupService,
+) {
+    fun update(magazine: DownmagazMagazine) {
+        val document = jsoupService.getDocument(magazine.url)
+        val pages = document.select(".catPages a")
+        val pageCount = pages[pages.size - 2].text().toInt()
+
+        val documents = sequenceOf(document) + generateSequence(2) { it + 1 }.takeWhile { it <= pageCount }
+            .map { magazine.url + "page/$it/" }
+            .map { jsoupService.getDocument(it) }
+        documents.forEach { magazine.addIssues(it) }
+    }
+
+    private fun DownmagazMagazine.addIssues(document: Document) {
+        document.select(".fstory .stitle a").forEach {
+            val name = it.text()
+            if (issues.none { i -> i.name == name }) {
+                issues += DownmagazIssue(name, URI(it.attr("abs:href")), this)
+            }
+        }
+    }
+
+    operator fun URI.plus(suffix: String): URI {
+        val path = rawPath
+        val separator = if (path.endsWith("/")) "" else "/"
+        val newPath = path + separator + suffix
+        return resolve(newPath)
+    }
+}
