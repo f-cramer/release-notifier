@@ -1,4 +1,4 @@
-package de.cramer.bstonotifier.services
+package de.cramer.releasenotifier.services
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document

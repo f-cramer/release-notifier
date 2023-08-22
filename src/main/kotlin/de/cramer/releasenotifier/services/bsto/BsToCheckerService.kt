@@ -1,10 +1,10 @@
-package de.cramer.bstonotifier.services.bsto
+package de.cramer.releasenotifier.services.bsto
 
-import de.cramer.bstonotifier.entities.bsto.BsToEpisode
-import de.cramer.bstonotifier.entities.bsto.BsToSeries
-import de.cramer.bstonotifier.repositories.bsto.BsToSeriesRepository
-import de.cramer.bstonotifier.services.CheckerService
-import de.cramer.bstonotifier.utils.Message
+import de.cramer.releasenotifier.entities.bsto.BsToEpisode
+import de.cramer.releasenotifier.entities.bsto.BsToSeries
+import de.cramer.releasenotifier.repositories.bsto.BsToSeriesRepository
+import de.cramer.releasenotifier.services.CheckerService
+import de.cramer.releasenotifier.utils.Message
 import kotlinx.html.a
 import kotlinx.html.body
 import kotlinx.html.div

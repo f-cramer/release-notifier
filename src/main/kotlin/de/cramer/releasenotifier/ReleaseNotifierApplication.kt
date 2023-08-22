@@ -1,4 +1,4 @@
-package de.cramer.bstonotifier
+package de.cramer.releasenotifier
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -6,8 +6,8 @@ import org.springframework.scheduling.annotation.EnableScheduling
 
 @EnableScheduling
 @SpringBootApplication
-class BsToNotifierApplication
+class ReleaseNotifierApplication
 
 fun main(args: Array<String>) {
-    runApplication<BsToNotifierApplication>(*args)
+    runApplication<ReleaseNotifierApplication>(*args)
 }

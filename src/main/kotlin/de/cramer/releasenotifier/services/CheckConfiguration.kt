@@ -1,6 +1,6 @@
-package de.cramer.bstonotifier.services
+package de.cramer.releasenotifier.services
 
-import de.cramer.bstonotifier.services.notifications.NotificationService
+import de.cramer.releasenotifier.services.notifications.NotificationService
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 

@@ -1,4 +1,4 @@
-package de.cramer.bstonotifier.configurations
+package de.cramer.releasenotifier.configurations
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

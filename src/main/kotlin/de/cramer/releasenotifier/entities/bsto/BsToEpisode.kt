@@ -1,4 +1,4 @@
-package de.cramer.bstonotifier.entities.bsto
+package de.cramer.releasenotifier.entities.bsto
 
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column

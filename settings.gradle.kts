@@ -1,1 +1,1 @@
-rootProject.name = "bs-to-notifier"
+rootProject.name = "release-notifier"

@@ -1,10 +1,10 @@
-package de.cramer.bstonotifier.services.bsto
+package de.cramer.releasenotifier.services.bsto
 
-import de.cramer.bstonotifier.entities.bsto.BsToEpisode
-import de.cramer.bstonotifier.entities.bsto.BsToLink
-import de.cramer.bstonotifier.entities.bsto.BsToSeason
-import de.cramer.bstonotifier.entities.bsto.BsToSeries
-import de.cramer.bstonotifier.services.JsoupService
+import de.cramer.releasenotifier.entities.bsto.BsToEpisode
+import de.cramer.releasenotifier.entities.bsto.BsToLink
+import de.cramer.releasenotifier.entities.bsto.BsToSeason
+import de.cramer.releasenotifier.entities.bsto.BsToSeries
+import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Service
 import java.net.URI

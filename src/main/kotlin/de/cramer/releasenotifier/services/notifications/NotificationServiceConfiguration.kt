@@ -1,6 +1,6 @@
-package de.cramer.bstonotifier.services.notifications
+package de.cramer.releasenotifier.services.notifications
 
-import de.cramer.bstonotifier.utils.Message
+import de.cramer.releasenotifier.utils.Message
 import jakarta.mail.internet.InternetAddress
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
