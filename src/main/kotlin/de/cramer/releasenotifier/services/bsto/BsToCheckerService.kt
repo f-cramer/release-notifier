@@ -1,27 +1,21 @@
 package de.cramer.releasenotifier.services.bsto
 
 import de.cramer.releasenotifier.entities.bsto.BsToEpisode
+import de.cramer.releasenotifier.entities.bsto.BsToLink
 import de.cramer.releasenotifier.entities.bsto.BsToSeries
 import de.cramer.releasenotifier.repositories.bsto.BsToSeriesRepository
 import de.cramer.releasenotifier.services.CheckerService
+import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
-import kotlinx.html.a
-import kotlinx.html.body
-import kotlinx.html.div
-import kotlinx.html.h3
-import kotlinx.html.h4
-import kotlinx.html.html
-import kotlinx.html.li
-import kotlinx.html.stream.appendHTML
-import kotlinx.html.ul
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.StringWriter
+import java.net.URI
 
 @Service
 class BsToCheckerService(
     private val seriesRepository: BsToSeriesRepository,
     private val seriesService: BsToSeriesService,
+    private val htmlMessageGenerator: HtmlMessageGenerator,
 ) : CheckerService {
     @Transactional
     override fun check(): Message? {
@@ -40,44 +34,60 @@ class BsToCheckerService(
             return null
         }
 
-        val episodesBySeries = groupBy { it.season.series }.toList()
+        val sources = groupBy { it.season.series }.toList()
             .sortedWith(compareBy<Pair<BsToSeries, List<BsToEpisode>>> { it.first.name }.thenBy { it.first.language })
-        val writer = StringWriter()
-        writer.appendHTML().html {
-            body {
-                val seriesText = if (episodesBySeries.size == 1) "series" else "series'"
-                h3 { text("New Episodes available for ${episodesBySeries.size} $seriesText") }
-                episodesBySeries.forEach { (series, episodes) ->
-                    val seasonNumberLength = series.seasons.maxOf { it.number }.toString().length
-                    val episodeNumberLength = series.seasons.flatMap { it.episodes }.maxOf { it.number }.toString().length
+            .map { (series, episodes) -> SeriesSource(series, episodes.map { EpisodeSource(it) }) }
+        val seriesText = if (sources.size == 1) "series" else "series'"
+        val header = "New Episodes available for ${sources.size} $seriesText"
 
-                    div {
-                        h4 { a(href = series.url.toString()) { text("${series.name} (${series.language})") } }
-                        ul {
-                            episodes.forEach { episode ->
-                                li {
-                                    text("${episode.season.number.format(seasonNumberLength)}.${episode.number.format(episodeNumberLength)} - ${episode.name}")
-                                    ul {
-                                        episode.links.forEach { link ->
-                                            li {
-                                                a(href = link.url.toString()) { text(link.hoster) }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return Message(writer.toString(), true)
-    }
-
-    private fun Int.format(length: Int): String {
-        return String.format("%0${length}d", this)
+        return htmlMessageGenerator.generate(sources, "New episodes", header)
     }
 
     private val List<BsToSeries>.allEpisodes: List<BsToEpisode>
         get() = flatMap { it.seasons }.flatMap { it.episodes }
+
+    private data class SeriesSource(val series: BsToSeries, val newEpisodes: List<EpisodeSource>) : HtmlMessageGenerator.Source<BsToContext> {
+        override fun getText(context: BsToContext) = "${series.name} (${series.language})"
+
+        override fun getUrl(context: BsToContext) = series.url
+
+        override fun getChildren(context: BsToContext) = newEpisodes
+
+        override fun generateContext(parentContext: BsToContext?) = BsToContext(
+            series.seasons.maxOf { it.number }.toString().length,
+            series.seasons.flatMap { it.episodes }.maxOf { it.number }.toString().length,
+        )
+    }
+
+    private data class EpisodeSource(val episode: BsToEpisode) : HtmlMessageGenerator.Source<BsToContext> {
+        private val links = episode.links.map { LinkSource(it) }
+
+        override fun getText(context: BsToContext) =
+            "${episode.season.number.format(context.seasonNumberLength)}.${episode.number.format(context.episodeNumberLength)} - ${episode.name}"
+
+        override fun getUrl(context: BsToContext): URI? = null
+
+        override fun getChildren(context: BsToContext) = links
+
+        override fun generateContext(parentContext: BsToContext?) = parentContext ?: error("parent context has to exist for EpisodeSource")
+    }
+
+    private data class LinkSource(val link: BsToLink) : HtmlMessageGenerator.Source<BsToContext> {
+        override fun getText(context: BsToContext) = link.hoster
+
+        override fun getUrl(context: BsToContext) = link.url
+
+        override fun getChildren(context: BsToContext) = emptyList<HtmlMessageGenerator.Source<BsToContext>>()
+
+        override fun generateContext(parentContext: BsToContext?) = parentContext ?: error("parent context has to exist for LinkSource")
+    }
+
+    private data class BsToContext(
+        val seasonNumberLength: Int,
+        val episodeNumberLength: Int,
+    )
+}
+
+private fun Int.format(length: Int): String {
+    return String.format("%0${length}d", this)
 }

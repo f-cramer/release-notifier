@@ -43,7 +43,7 @@ class NotificationServiceConfiguration {
             if (mailProperties.properties["spring.mail.properties.mail.smtp.from"].isNullOrBlank()) {
                 helper.setFrom(mailProperties.username)
             }
-            helper.setSubject("New episodes")
+            helper.setSubject(message.subject)
             helper.setText(message.message, message.html)
             helper.setTo(InternetAddress(recipientAddress, recipientName))
         }
