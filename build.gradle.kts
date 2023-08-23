@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     id("org.springframework.boot") version "3.1.2"
@@ -13,6 +14,8 @@ plugins {
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
+
+val isCi = System.getenv("CI") == "true"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -49,6 +52,9 @@ tasks.withType<Test> {
 
 ktlint {
     version.set("0.50.0")
+    reporters {
+        reporter(if (isCi) ReporterType.CHECKSTYLE else ReporterType.HTML)
+    }
 }
 
 detekt {
@@ -64,4 +70,10 @@ dependencyManagement {
             }
         }
     }
+}
+
+// confirm build scan tos if available
+extensions.findByName("buildScan")?.withGroovyBuilder {
+    setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
+    setProperty("termsOfServiceAgree", "yes")
 }
