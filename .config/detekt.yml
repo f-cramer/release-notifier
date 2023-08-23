@@ -1,0 +1,23 @@
+complexity:
+  ComplexCondition:
+    active: false
+  LongParameterList:
+    active: false
+  TooManyFunctions:
+    active: false
+
+exceptions:
+  active: true
+
+style:
+  MagicNumber:
+    ignoreAnnotation: true
+    ignoreNumbers: [ '-1', '0', '1', '2', '10', '100' ]
+  MaxLineLength:
+    active: false
+  ReturnCount:
+    active: false
+  ThrowsCount:
+    active: false
+  UnusedPrivateMember:
+    allowedNames: ignored|expected|init|destroy|shutdown

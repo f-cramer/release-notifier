@@ -8,6 +8,7 @@ plugins {
     kotlin("plugin.jpa") version "1.9.10"
 
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
+    id("io.gitlab.arturbosch.detekt") version "1.23.1"
 }
 
 group = "com.example"
@@ -48,4 +49,19 @@ tasks.withType<Test> {
 
 ktlint {
     version.set("0.50.0")
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(files(".config/detekt.yml"))
+}
+
+dependencyManagement {
+    configurations.getByName("detekt") {
+        dependencies {
+            dependencySet("org.jetbrains.kotlin:1.9.0") {
+                entry("kotlin-compiler-embeddable")
+            }
+        }
+    }
 }

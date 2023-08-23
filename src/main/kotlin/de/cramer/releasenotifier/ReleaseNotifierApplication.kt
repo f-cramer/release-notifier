@@ -9,5 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling
 class ReleaseNotifierApplication
 
 fun main(args: Array<String>) {
+    @Suppress("SpreadOperator")
     runApplication<ReleaseNotifierApplication>(*args)
 }

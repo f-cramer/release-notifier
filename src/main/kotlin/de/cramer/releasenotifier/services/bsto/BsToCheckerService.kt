@@ -10,6 +10,7 @@ import de.cramer.releasenotifier.utils.Message
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.net.URI
+import java.util.Locale
 
 @Service
 class BsToCheckerService(
@@ -89,5 +90,5 @@ class BsToCheckerService(
 }
 
 private fun Int.format(length: Int): String {
-    return String.format("%0${length}d", this)
+    return String.format(Locale.ROOT, "%0${length}d", this)
 }
