@@ -15,7 +15,7 @@ import kotlin.concurrent.withLock
 @Service
 class JsoupService(
     private val log: Logger,
-    @Value("\${jsoup.delay-between-requests}") private val minimumWaitTimeBetweenRequests: Duration,
+    @Value("\${jsoup.delay-between-requests:0}") private val minimumWaitTimeBetweenRequests: Duration,
 ) {
 
     private val lock = ReentrantLock()
