@@ -1,4 +1,4 @@
-package de.cramer.releasenotifier.entities.downmagaz
+package de.cramer.releasenotifier.providers.bsto.entities
 
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -11,43 +11,50 @@ import jakarta.persistence.Table
 import java.net.URI
 
 @Entity
-@Table(name = "downmagaz_magazines")
-class DownmagazMagazine(
+@Table(name = "bsto_series")
+class BsToSeries(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "magazine_id")
+    @Column(name = "series_id")
     var id: Long,
 
     @Column(name = "name")
     var name: String,
 
+    @Column(name = "language")
+    var language: String,
+
     @Column(name = "url")
     var url: URI,
 
-    @OneToMany(mappedBy = "magazine", cascade = [CascadeType.ALL])
-    val issues: MutableList<DownmagazIssue>,
+    @OneToMany(mappedBy = "series", cascade = [CascadeType.ALL])
+    val seasons: MutableList<BsToSeason>,
 ) {
+    constructor(url: String) : this(0, "", "", URI(url), mutableListOf())
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
+        if (!super.equals(other)) return false
 
-        other as DownmagazMagazine
+        other as BsToSeries
 
-        if (name != other.name) return false
+        if (language != other.language) return false
         if (url != other.url) return false
-        if (issues != other.issues) return false
+        if (seasons != other.seasons) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = name.hashCode()
+        var result = super.hashCode()
+        result = 31 * result + language.hashCode()
         result = 31 * result + url.hashCode()
-        result = 31 * result + issues.hashCode()
+        result = 31 * result + seasons.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "DownmagazMagazine(id=$id, name='$name', url=$url)"
+        return "Series(id=$id, name='$name', language=$language, url=$url)"
     }
 }

@@ -1,4 +1,4 @@
-package de.cramer.releasenotifier.entities.downmagaz
+package de.cramer.releasenotifier.providers.downmagaz.entities
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

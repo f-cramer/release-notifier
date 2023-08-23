@@ -1,9 +1,8 @@
-package de.cramer.releasenotifier.services.bsto
+package de.cramer.releasenotifier.providers.bsto
 
-import de.cramer.releasenotifier.entities.bsto.BsToEpisode
-import de.cramer.releasenotifier.entities.bsto.BsToLink
-import de.cramer.releasenotifier.entities.bsto.BsToSeries
-import de.cramer.releasenotifier.repositories.bsto.BsToSeriesRepository
+import de.cramer.releasenotifier.providers.bsto.entities.BsToEpisode
+import de.cramer.releasenotifier.providers.bsto.entities.BsToLink
+import de.cramer.releasenotifier.providers.bsto.entities.BsToSeries
 import de.cramer.releasenotifier.services.CheckerService
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
@@ -87,8 +86,10 @@ class BsToCheckerService(
         val seasonNumberLength: Int,
         val episodeNumberLength: Int,
     )
-}
 
-private fun Int.format(length: Int): String {
-    return String.format(Locale.ROOT, "%0${length}d", this)
+    companion object {
+        private fun Int.format(length: Int): String {
+            return String.format(Locale.ROOT, "%0${length}d", this)
+        }
+    }
 }

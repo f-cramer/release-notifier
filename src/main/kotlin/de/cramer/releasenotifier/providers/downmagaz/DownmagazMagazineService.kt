@@ -1,7 +1,7 @@
-package de.cramer.releasenotifier.services.downmagaz
+package de.cramer.releasenotifier.providers.downmagaz
 
-import de.cramer.releasenotifier.entities.downmagaz.DownmagazIssue
-import de.cramer.releasenotifier.entities.downmagaz.DownmagazMagazine
+import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazIssue
+import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazMagazine
 import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Document
 import org.springframework.stereotype.Service
