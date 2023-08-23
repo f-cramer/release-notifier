@@ -10,7 +10,7 @@ class CheckConfiguration(
     private val notificationService: NotificationService,
 ) {
 
-    @Scheduled(cron = "\${check.schedule}")
+    @Scheduled(cron = "\${check.schedule:-}")
     fun check() {
         checkerServices.asSequence()
             .mapNotNull { it.check() }
