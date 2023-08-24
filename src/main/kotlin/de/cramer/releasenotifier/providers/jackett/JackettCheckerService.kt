@@ -17,7 +17,7 @@ class JackettCheckerService(
     private val htmlMessageGenerator: HtmlMessageGenerator,
 ) : CheckerService {
     @Transactional
-    override fun check(): Message? {
+    override fun check(): List<Message> {
         val allSearches = searchRepository.findAll()
         val releasesBeforeUpdate = allSearches.allReleases
 
@@ -25,29 +25,29 @@ class JackettCheckerService(
         val releasesAfterUpdate = allSearches.allReleases
 
         val newReleases = releasesAfterUpdate - releasesBeforeUpdate.toSet()
-        return newReleases.createMessage()
+        return newReleases.createMessages()
     }
 
-    private fun List<JackettRelease>.createMessage(): Message? {
+    private fun List<JackettRelease>.createMessages(): List<Message> {
         if (isEmpty()) {
-            return null
+            return emptyList()
         }
 
-        val sources = groupBy { it.result }.asSequence()
+        return groupBy { it.result.search }.asSequence()
             .sortedBy { (k, _) -> k.name }
-            .map { (result, releases) ->
-                val releaseSources = releases.sortedBy { it.title }.map { release ->
-                    val linkSources = release.links.map { LinkSource(it) }
-                    ReleaseSource(release, linkSources)
-                }
-                ResultSource(result, releaseSources)
+            .map { (search, releases) ->
+                val sources = releases.groupBy { it.result }.asSequence()
+                    .sortedBy { (k, _) -> k.name }
+                    .map { (result, releases) ->
+                        ResultSource(result, releases.map { r -> ReleaseSource(r, r.links.map { LinkSource(it) }) })
+                    }
+                    .toList()
+
+                val releaseString = if (releases.size == 1) "release" else "releases"
+                val subject = "${sources.size} new $releaseString available for search \"${search.name}\""
+                htmlMessageGenerator.generate(sources, subject, null)
             }
             .toList()
-
-        val searchText = if (sources.size == 1) "search" else "searches"
-        val header = "New links available for ${sources.size} $searchText"
-
-        return htmlMessageGenerator.generate(sources, "New links", header)
     }
 
     private val List<JackettSearch>.allReleases: List<JackettRelease>

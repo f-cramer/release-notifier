@@ -18,7 +18,7 @@ class BsToCheckerService(
     private val htmlMessageGenerator: HtmlMessageGenerator,
 ) : CheckerService {
     @Transactional
-    override fun check(): Message? {
+    override fun check(): List<Message> {
         val allSeries: List<BsToSeries> = seriesRepository.findAll()
         val episodesBeforeUpdate = allSeries.allEpisodes
 
@@ -26,38 +26,27 @@ class BsToCheckerService(
         val episodesAfterUpdate = allSeries.allEpisodes
 
         val newEpisodes = (episodesAfterUpdate - episodesBeforeUpdate.toSet()).filter { it.links.isNotEmpty() }
-        return newEpisodes.createMessage()
+        return newEpisodes.createMessages()
     }
 
-    private fun List<BsToEpisode>.createMessage(): Message? {
+    private fun List<BsToEpisode>.createMessages(): List<Message> {
         if (isEmpty()) {
-            return null
+            return emptyList()
         }
 
-        val sources = groupBy { it.season.series }.toList()
-            .sortedWith(compareBy<Pair<BsToSeries, List<BsToEpisode>>> { it.first.name }.thenBy { it.first.language })
-            .map { (series, episodes) -> SeriesSource(series, episodes.map { EpisodeSource(it) }) }
-        val seriesText = if (sources.size == 1) "series" else "series'"
-        val header = "New Episodes available for ${sources.size} $seriesText"
-
-        return htmlMessageGenerator.generate(sources, "New episodes", header)
+        return groupBy { it.season.series }.asSequence()
+            .sortedWith(compareBy<Map.Entry<BsToSeries, List<BsToEpisode>>> { it.key.name }.thenBy { it.key.language })
+            .map { (series, episodes) ->
+                val sources = episodes.map { EpisodeSource(it) }
+                val episodeString = if (episodes.size == 1) "episode" else "episodes"
+                val subject = "${sources.size} new $episodeString available for series \"${series.name}\""
+                htmlMessageGenerator.generate(sources, subject, null)
+            }
+            .toList()
     }
 
     private val List<BsToSeries>.allEpisodes: List<BsToEpisode>
         get() = flatMap { it.seasons }.flatMap { it.episodes }
-
-    private data class SeriesSource(val series: BsToSeries, val newEpisodes: List<EpisodeSource>) : HtmlMessageGenerator.Source<BsToContext> {
-        override fun getText(context: BsToContext) = "${series.name} (${series.language})"
-
-        override fun getUrl(context: BsToContext) = series.url
-
-        override fun getChildren(context: BsToContext) = newEpisodes
-
-        override fun generateContext(parentContext: BsToContext?) = BsToContext(
-            series.seasons.maxOf { it.number }.toString().length,
-            series.seasons.flatMap { it.episodes }.maxOf { it.number }.toString().length,
-        )
-    }
 
     private data class EpisodeSource(val episode: BsToEpisode) : HtmlMessageGenerator.Source<BsToContext> {
         private val links = episode.links.map { LinkSource(it) }

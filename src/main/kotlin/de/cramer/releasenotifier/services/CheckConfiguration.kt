@@ -22,12 +22,12 @@ class CheckConfiguration(
     @Scheduled(cron = "\${check.schedule:-}")
     fun check() {
         checkerServices.asSequence()
-            .mapNotNull {
+            .flatMap {
                 try {
                     it.check()
                 } catch (t: Throwable) {
                     log.error(t.message, t)
-                    t.createMessage(it)
+                    listOf(t.createMessage(it))
                 }
             }
             .forEach { notificationService.notify(it) }

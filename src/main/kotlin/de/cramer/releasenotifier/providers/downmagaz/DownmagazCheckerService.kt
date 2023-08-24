@@ -15,7 +15,7 @@ class DownmagazCheckerService(
     private val htmlMessageGenerator: HtmlMessageGenerator,
 ) : CheckerService {
     @Transactional
-    override fun check(): Message? {
+    override fun check(): List<Message> {
         val allMagazines = magazineRepository.findAll()
         val issuesBeforeUpdate = allMagazines.allIssues
 
@@ -23,37 +23,27 @@ class DownmagazCheckerService(
         val issuesAfterUpdate = allMagazines.allIssues
 
         val newIssues = issuesAfterUpdate - issuesBeforeUpdate.toSet()
-        return newIssues.createMessage()
+        return newIssues.createMessages()
     }
 
-    private fun List<DownmagazIssue>.createMessage(): Message? {
+    private fun List<DownmagazIssue>.createMessages(): List<Message> {
         if (isEmpty()) {
-            return null
+            return emptyList()
         }
 
-        val sources = groupBy { it.magazine }.asSequence()
+        return groupBy { it.magazine }.asSequence()
             .sortedBy { (k, _) -> k.name }
-            .map { (magazine, issues) -> MagazineSource(magazine, issues.sortedBy { it.name }.map { IssueSource(it) }) }
+            .map { (magazine, issues) ->
+                val sources = issues.map { IssueSource(it) }
+                val issueString = if (issues.size == 1) "issue" else "issues"
+                val subject = "${sources.size} new $issueString available for magazine \"${magazine.name}\""
+                htmlMessageGenerator.generate(sources, subject, null)
+            }
             .toList()
-
-        val magazinesText = if (sources.size == 1) "magazine" else "magazines"
-        val header = "New issues available for ${sources.size} $magazinesText"
-
-        return htmlMessageGenerator.generate(sources, "New issues", header)
     }
 
     private val List<DownmagazMagazine>.allIssues: List<DownmagazIssue>
         get() = flatMap { it.issues }
-
-    private data class MagazineSource(val magazine: DownmagazMagazine, private val newIssues: List<IssueSource>) : HtmlMessageGenerator.Source<DownmagazContext> {
-        override fun getText(context: DownmagazContext) = magazine.name
-
-        override fun getUrl(context: DownmagazContext) = magazine.url
-
-        override fun getChildren(context: DownmagazContext) = newIssues
-
-        override fun generateContext(parentContext: DownmagazContext?) = DownmagazContext
-    }
 
     private data class IssueSource(private val issue: DownmagazIssue) : HtmlMessageGenerator.Source<DownmagazContext> {
         override fun getText(context: DownmagazContext) = issue.name
