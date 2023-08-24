@@ -15,6 +15,12 @@ class JackettSearchService(
 ) {
     fun update(search: JackettSearch) {
         val document = jsoupService.getDocument(search.url, parser = Parser.xmlParser())
+        val rootElement = document.selectFirst(":root")!!
+        if (rootElement.tagName() == "error") {
+            val code = rootElement.attr("code")
+            val description = rootElement.attr("description")
+            error("error while executing request for search \"${search.name}\" (code: $code, description, $description)")
+        }
 
         val ignore = search.ignorePattern?.toRegex(RegexOption.IGNORE_CASE)
         val namePrefix = search.namePrefixPattern?.toRegex(RegexOption.IGNORE_CASE)
