@@ -17,6 +17,8 @@ version = "0.0.1-SNAPSHOT"
 
 val isCi = System.getenv("CI") == "true"
 
+ext["h2.version"] = "2.2.220"
+
 java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
