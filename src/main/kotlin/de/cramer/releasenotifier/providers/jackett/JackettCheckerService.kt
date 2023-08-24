@@ -3,11 +3,10 @@ package de.cramer.releasenotifier.providers.jackett
 import de.cramer.releasenotifier.providers.jackett.entities.JackettRelease
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearchResult
-import de.cramer.releasenotifier.services.CheckerService
+import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 
 @Service
@@ -15,25 +14,19 @@ class JackettCheckerService(
     private val searchRepository: JackettSearchRepository,
     private val searchService: JackettSearchService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
-) : CheckerService {
-    @Transactional
-    override fun check(): List<Message> {
-        val allSearches = searchRepository.findAll()
-        val releasesBeforeUpdate = allSearches.allReleases
+) : AbstractCheckerSerivce<JackettSearch, JackettRelease>() {
+    override fun findAll(): List<JackettSearch> = searchRepository.findAll()
 
-        allSearches.forEach { searchService.update(it) }
-        val releasesAfterUpdate = allSearches.allReleases
+    override fun getChildren(t: JackettSearch) = t.results.flatMap { it.releases }
 
-        val newReleases = releasesAfterUpdate - releasesBeforeUpdate.toSet()
-        return newReleases.createMessages()
-    }
+    override fun update(t: JackettSearch) = searchService.update(t)
 
-    private fun List<JackettRelease>.createMessages(): List<Message> {
-        if (isEmpty()) {
+    override fun createMessages(newChildren: List<JackettRelease>): List<Message> {
+        if (newChildren.isEmpty()) {
             return emptyList()
         }
 
-        return groupBy { it.result.search }.asSequence()
+        return newChildren.groupBy { it.result.search }.asSequence()
             .sortedBy { (k, _) -> k.name }
             .map { (search, releases) ->
                 val sources = releases.groupBy { it.result }.asSequence()
@@ -49,9 +42,6 @@ class JackettCheckerService(
             }
             .toList()
     }
-
-    private val List<JackettSearch>.allReleases: List<JackettRelease>
-        get() = flatMap { it.results }.flatMap { it.releases }
 
     private data class ResultSource(val result: JackettSearchResult, val releases: List<ReleaseSource>) : HtmlMessageGenerator.Source<JackettContext> {
         override fun getText(context: JackettContext) = result.name

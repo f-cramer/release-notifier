@@ -2,36 +2,29 @@ package de.cramer.releasenotifier.providers.downmagaz
 
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazIssue
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazMagazine
-import de.cramer.releasenotifier.services.CheckerService
+import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class DownmagazCheckerService(
     private val magazineRepository: DownmagazMagazineRepository,
     private val magazineService: DownmagazMagazineService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
-) : CheckerService {
-    @Transactional
-    override fun check(): List<Message> {
-        val allMagazines = magazineRepository.findAll()
-        val issuesBeforeUpdate = allMagazines.allIssues
+) : AbstractCheckerSerivce<DownmagazMagazine, DownmagazIssue>() {
+    override fun findAll(): List<DownmagazMagazine> = magazineRepository.findAll()
 
-        allMagazines.forEach { magazineService.update(it) }
-        val issuesAfterUpdate = allMagazines.allIssues
+    override fun getChildren(t: DownmagazMagazine) = t.issues
 
-        val newIssues = issuesAfterUpdate - issuesBeforeUpdate.toSet()
-        return newIssues.createMessages()
-    }
+    override fun update(t: DownmagazMagazine) = magazineService.update(t)
 
-    private fun List<DownmagazIssue>.createMessages(): List<Message> {
-        if (isEmpty()) {
+    override fun createMessages(newChildren: List<DownmagazIssue>): List<Message> {
+        if (newChildren.isEmpty()) {
             return emptyList()
         }
 
-        return groupBy { it.magazine }.asSequence()
+        return newChildren.groupBy { it.magazine }.asSequence()
             .sortedBy { (k, _) -> k.name }
             .map { (magazine, issues) ->
                 val sources = issues.map { IssueSource(it) }
@@ -41,9 +34,6 @@ class DownmagazCheckerService(
             }
             .toList()
     }
-
-    private val List<DownmagazMagazine>.allIssues: List<DownmagazIssue>
-        get() = flatMap { it.issues }
 
     private data class IssueSource(private val issue: DownmagazIssue) : HtmlMessageGenerator.Source<DownmagazContext> {
         override fun getText(context: DownmagazContext) = issue.name

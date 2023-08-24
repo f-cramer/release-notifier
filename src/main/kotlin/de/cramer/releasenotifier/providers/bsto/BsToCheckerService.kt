@@ -3,11 +3,10 @@ package de.cramer.releasenotifier.providers.bsto
 import de.cramer.releasenotifier.providers.bsto.entities.BsToEpisode
 import de.cramer.releasenotifier.providers.bsto.entities.BsToLink
 import de.cramer.releasenotifier.providers.bsto.entities.BsToSeries
-import de.cramer.releasenotifier.services.CheckerService
+import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.util.Locale
 
@@ -16,25 +15,19 @@ class BsToCheckerService(
     private val seriesRepository: BsToSeriesRepository,
     private val seriesService: BsToSeriesService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
-) : CheckerService {
-    @Transactional
-    override fun check(): List<Message> {
-        val allSeries: List<BsToSeries> = seriesRepository.findAll()
-        val episodesBeforeUpdate = allSeries.allEpisodes
+) : AbstractCheckerSerivce<BsToSeries, BsToEpisode>() {
+    override fun findAll(): List<BsToSeries> = seriesRepository.findAll()
 
-        allSeries.forEach { seriesService.update(it) }
-        val episodesAfterUpdate = allSeries.allEpisodes
+    override fun getChildren(t: BsToSeries) = t.seasons.flatMap { it.episodes }
 
-        val newEpisodes = (episodesAfterUpdate - episodesBeforeUpdate.toSet()).filter { it.links.isNotEmpty() }
-        return newEpisodes.createMessages()
-    }
+    override fun update(t: BsToSeries) = seriesService.update(t)
 
-    private fun List<BsToEpisode>.createMessages(): List<Message> {
-        if (isEmpty()) {
+    override fun createMessages(newChildren: List<BsToEpisode>): List<Message> {
+        if (newChildren.isEmpty()) {
             return emptyList()
         }
 
-        return groupBy { it.season.series }.asSequence()
+        return newChildren.groupBy { it.season.series }.asSequence()
             .sortedWith(compareBy<Map.Entry<BsToSeries, List<BsToEpisode>>> { it.key.name }.thenBy { it.key.language })
             .map { (series, episodes) ->
                 val sources = episodes.map { EpisodeSource(it) }
@@ -44,9 +37,6 @@ class BsToCheckerService(
             }
             .toList()
     }
-
-    private val List<BsToSeries>.allEpisodes: List<BsToEpisode>
-        get() = flatMap { it.seasons }.flatMap { it.episodes }
 
     private data class EpisodeSource(val episode: BsToEpisode) : HtmlMessageGenerator.Source<BsToContext> {
         private val links = episode.links.map { LinkSource(it) }
