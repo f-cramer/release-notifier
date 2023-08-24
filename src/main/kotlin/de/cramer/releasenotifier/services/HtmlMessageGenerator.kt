@@ -41,7 +41,7 @@ class HtmlMessageGenerator {
         val text = source.getText(context)
         val url = source.getUrl(context)
         if (url != null) {
-            a(href = url.toString()) {
+            a(href = url.toASCIIString()) {
                 text(text)
             }
         } else {
