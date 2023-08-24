@@ -18,11 +18,13 @@ import java.net.URI
 @Service
 class HtmlMessageGenerator {
 
-    fun <Context> generate(sources: Collection<Source<Context>>, subject: String, header: String): Message {
+    fun <Context> generate(sources: Collection<Source<Context>>, subject: String, header: String? = null): Message {
         val writer = StringWriter()
         writer.appendHTML().html {
             body {
-                h3 { text(header) }
+                if (header != null) {
+                    h3 { text(header) }
+                }
                 sources.forEach { source ->
                     div {
                         val context = source.generateContext(null)
