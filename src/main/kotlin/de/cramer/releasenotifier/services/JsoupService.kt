@@ -2,6 +2,7 @@ package de.cramer.releasenotifier.services
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.parser.Parser
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -21,7 +22,7 @@ class JsoupService(
     private val lock = ReentrantLock()
     private var earliestNextRequest: Instant? = null
 
-    fun getDocument(uri: URI): Document {
+    fun getDocument(uri: URI, parser: Parser? = null): Document {
         lock.withLock {
             val earliestNextRequest = this.earliestNextRequest
             val now = Instant.now()
@@ -34,7 +35,12 @@ class JsoupService(
             }
             this.earliestNextRequest = now + minimumWaitTimeBetweenRequests
 
-            return Jsoup.connect(uri.toString()).get()
+            val connection = Jsoup.connect(uri.toString())
+            if (parser != null) {
+                connection.parser(parser)
+            }
+
+            return connection.get()
         }
     }
 }
