@@ -8,6 +8,8 @@ complexity:
 
 exceptions:
   active: true
+  TooGenericExceptionCaught:
+    active: false
 
 style:
   MagicNumber:
