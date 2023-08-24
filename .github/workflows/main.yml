@@ -21,11 +21,11 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2.7.1
         with:
-          arguments: assemble --scan
+          arguments: assemble
       - name: Test with Gradle
         uses: gradle/gradle-build-action@v2.7.1
         with:
-          arguments: check --continue --scan
+          arguments: check --continue
       - name: Save ktlint reports
         uses: jwgmeligmeyling/checkstyle-github-action@v1
         if: always() # always run even if the previous step fails
