@@ -38,14 +38,7 @@ class JackettSearchService(
             return
         }
 
-        val resultName = run {
-            var t = title
-            namePrefix?.matchAt(t, 0)?.let { t = t.substring(it.range.last + 1) }
-            nameSuffix?.findAll(t)?.lastOrNull()?.takeIf { it.range.last == t.length - 1 }?.let { t = t.substring(0, it.range.first) }
-            replacements.forEach { (regex, replacement) -> t = regex.replace(t, replacement) }
-            t
-        }
-
+        val resultName = title.getResultName(namePrefix, nameSuffix, replacements) ?: return
         val links = sequenceOf(
             element.select("guid").eachText(),
             element.select("link").eachText(),
@@ -73,5 +66,17 @@ class JackettSearchService(
         if (existingResult == null && links.isNotEmpty()) {
             results += result
         }
+    }
+
+    private fun String.getResultName(namePrefix: Regex?, nameSuffix: Regex?, replacements: Map<Regex, String>): String? {
+        var t = this
+        if (namePrefix != null) {
+            namePrefix.matchAt(t, 0)?.let { t = t.substring(it.range.last + 1) } ?: return null
+        }
+        if (nameSuffix != null) {
+            nameSuffix.findAll(t).lastOrNull()?.takeIf { it.range.last == t.length - 1 }?.let { t = t.substring(0, it.range.first) } ?: return null
+        }
+        replacements.forEach { (regex, replacement) -> t = regex.replace(t, replacement) }
+        return t
     }
 }
