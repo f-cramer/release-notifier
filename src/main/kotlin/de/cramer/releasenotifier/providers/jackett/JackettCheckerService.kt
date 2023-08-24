@@ -45,9 +45,9 @@ class JackettCheckerService(
             .toList()
 
         val searchText = if (sources.size == 1) "search" else "searches"
-        val header = "New releases available for ${sources.size} $searchText"
+        val header = "New links available for ${sources.size} $searchText"
 
-        return htmlMessageGenerator.generate(sources, "New releases", header)
+        return htmlMessageGenerator.generate(sources, "New links", header)
     }
 
     private val List<JackettSearch>.allReleases: List<JackettRelease>
