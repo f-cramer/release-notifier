@@ -46,6 +46,8 @@ class JackettSearch(
     @OneToMany(mappedBy = "search", cascade = [CascadeType.ALL])
     var results: MutableList<JackettSearchResult>,
 ) {
+    constructor(name: String, url: URI) : this(0, name, url, null, null, null, mutableMapOf(), mutableListOf())
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

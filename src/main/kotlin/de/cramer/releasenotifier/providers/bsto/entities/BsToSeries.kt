@@ -30,7 +30,7 @@ class BsToSeries(
     @OneToMany(mappedBy = "series", cascade = [CascadeType.ALL])
     val seasons: MutableList<BsToSeason>,
 ) {
-    constructor(url: String) : this(0, "", "", URI(url), mutableListOf())
+    constructor(name: String, language: String, url: URI) : this(0, name, language, url, mutableListOf())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

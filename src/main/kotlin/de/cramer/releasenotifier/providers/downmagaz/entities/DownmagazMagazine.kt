@@ -27,6 +27,8 @@ class DownmagazMagazine(
     @OneToMany(mappedBy = "magazine", cascade = [CascadeType.ALL])
     val issues: MutableList<DownmagazIssue>,
 ) {
+    constructor(name: String, url: URI) : this(0, name, url, mutableListOf())
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
