@@ -30,7 +30,11 @@ class BsToCheckerService(
         return newChildren.groupBy { it.season.series }.asSequence()
             .sortedWith(compareBy<Map.Entry<BsToSeries, List<BsToEpisode>>> { it.key.name }.thenBy { it.key.language })
             .map { (series, episodes) ->
-                val sources = episodes.map { EpisodeSource(it) }
+                val context = BsToContext(
+                    series.seasons.maxOf { it.number }.toString().length,
+                    series.seasons.flatMap { it.episodes }.maxOf { it.number }.toString().length,
+                )
+                val sources = episodes.map { EpisodeSource(it, context) }
                 val episodeString = if (episodes.size == 1) "episode" else "episodes"
                 val subject = "${sources.size} new $episodeString available for series \"${series.name}\""
                 htmlMessageGenerator.generate(sources, subject, null)
@@ -38,7 +42,7 @@ class BsToCheckerService(
             .toList()
     }
 
-    private data class EpisodeSource(val episode: BsToEpisode) : HtmlMessageGenerator.Source<BsToContext> {
+    private data class EpisodeSource(val episode: BsToEpisode, val context: BsToContext) : HtmlMessageGenerator.Source<BsToContext> {
         private val links = episode.links.map { LinkSource(it) }
 
         override fun getText(context: BsToContext) =
@@ -48,7 +52,7 @@ class BsToCheckerService(
 
         override fun getChildren(context: BsToContext) = links
 
-        override fun generateContext(parentContext: BsToContext?) = parentContext ?: error("parent context has to exist for EpisodeSource")
+        override fun generateContext(parentContext: BsToContext?) = context
     }
 
     private data class LinkSource(val link: BsToLink) : HtmlMessageGenerator.Source<BsToContext> {
