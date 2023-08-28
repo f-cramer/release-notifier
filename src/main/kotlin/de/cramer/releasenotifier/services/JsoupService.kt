@@ -22,7 +22,11 @@ class JsoupService(
     private val lock = ReentrantLock()
     private var earliestNextRequest: Instant? = null
 
-    fun getDocument(uri: URI, parser: Parser? = null): Document {
+    fun getDocument(
+        uri: URI,
+        parser: Parser? = null,
+        timeout: Duration? = null,
+    ): Document {
         lock.withLock {
             val earliestNextRequest = this.earliestNextRequest
             val now = Instant.now()
@@ -36,9 +40,8 @@ class JsoupService(
             this.earliestNextRequest = now + minimumWaitTimeBetweenRequests
 
             val connection = Jsoup.connect(uri.toString())
-            if (parser != null) {
-                connection.parser(parser)
-            }
+            parser?.let { connection.parser(it) }
+            timeout?.let { connection.timeout(it.toMillis().toInt()) }
 
             return connection.get()
         }
