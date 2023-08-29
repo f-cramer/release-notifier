@@ -1,5 +1,6 @@
 package de.cramer.releasenotifier.services
 
+import de.cramer.releasenotifier.utils.TimedLock
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.parser.Parser
@@ -8,42 +9,26 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.time.Duration
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 @Service
 class JsoupService(
     private val log: Logger,
     @Value("\${jsoup.delay-between-requests:0}") private val minimumWaitTimeBetweenRequests: Duration,
 ) {
-
-    private val lock = ReentrantLock()
-    private var earliestNextRequest: Instant? = null
+    private val locks = mutableMapOf<String, TimedLock>()
 
     fun getDocument(
         uri: URI,
         parser: Parser? = null,
         timeout: Duration? = null,
-    ): Document {
-        lock.withLock {
-            val earliestNextRequest = this.earliestNextRequest
-            val now = Instant.now()
-            if (earliestNextRequest != null) {
-                if (earliestNextRequest.isAfter(now)) {
-                    val millis = now.until(earliestNextRequest, ChronoUnit.MILLIS)
-                    log.trace("sleeping for {} ms", millis)
-                    Thread.sleep(millis)
-                }
-            }
-            this.earliestNextRequest = now + minimumWaitTimeBetweenRequests
+        lockKey: String = uri.host,
+    ): Document = locks.computeIfAbsent(lockKey) {
+        TimedLock(minimumWaitTimeBetweenRequests, log = log)
+    }.withLock {
+        val connection = Jsoup.connect(uri.toString())
+        parser?.let { connection.parser(it) }
+        timeout?.let { connection.timeout(it.toMillis().toInt()) }
 
-            val connection = Jsoup.connect(uri.toString())
-            parser?.let { connection.parser(it) }
-            timeout?.let { connection.timeout(it.toMillis().toInt()) }
-
-            return connection.get()
-        }
+        connection.get()
     }
 }
