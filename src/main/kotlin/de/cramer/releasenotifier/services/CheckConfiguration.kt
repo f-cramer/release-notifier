@@ -9,27 +9,36 @@ import kotlinx.html.stream.createHTML
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.slf4j.Logger
 import org.springframework.aop.framework.AopProxyUtils
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.util.concurrent.Callable
 
 @Service
 class CheckConfiguration(
     private val checkerServices: List<CheckerService>,
     private val notificationService: NotificationService,
+    @Qualifier("applicationTaskExecutor") private val executor: AsyncTaskExecutor,
     private val log: Logger,
 ) {
 
     @Scheduled(cron = "\${check.schedule:-}")
     fun check() {
-        checkerServices.asSequence()
-            .flatMap {
-                try {
-                    it.check()
-                } catch (t: Throwable) {
-                    log.error(t.message, t)
-                    listOf(t.createMessage(it))
-                }
-            }
+        checkerServices
+            .map {
+                executor.submit(
+                    Callable {
+                        try {
+                            it.check()
+                        } catch (t: Throwable) {
+                            log.error(t.message, t)
+                            listOf(t.createMessage(it))
+                        }
+                    },
+                )
+            }.asSequence()
+            .flatMap { it.get() }
             .forEach { notificationService.notify(it) }
     }
 
