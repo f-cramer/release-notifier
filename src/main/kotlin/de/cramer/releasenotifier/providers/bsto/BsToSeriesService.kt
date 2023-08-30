@@ -8,6 +8,7 @@ import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Service
 import java.net.URI
+import java.time.Duration
 import java.util.Locale
 
 @Service
@@ -18,7 +19,7 @@ class BsToSeriesService(
         val languageString = SERIES_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[2] } ?: SEASON_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[1] } ?: return
         val language = Locale.forLanguageTag(languageString).toLanguageTag()
 
-        val document = jsoupService.getDocument(series.url)
+        val document = jsoupService.getDocument(series.url, timeout = Duration.ofMinutes(1))
         val name = document.selectFirst(NAME_SELECTOR)
             ?.textNodes()?.firstOrNull()?.text()?.trim() ?: error("could not find series name at ($NAME_SELECTOR)")
         val seasonsElements = document.select(".serie .seasons li a")
