@@ -21,6 +21,7 @@ class JsoupService(
         uri: URI,
         parser: Parser? = null,
         timeout: Duration? = null,
+        ignoreHttpErrors: Boolean? = null,
         lockKey: String = uri.host,
     ): Document = locks.computeIfAbsent(lockKey) {
         TimedLock(minimumWaitTimeBetweenRequests, log = log)
@@ -28,6 +29,7 @@ class JsoupService(
         val connection = Jsoup.connect(uri.toString())
         parser?.let { connection.parser(it) }
         timeout?.let { connection.timeout(it.toMillis().toInt()) }
+        ignoreHttpErrors?.let { connection.ignoreHttpErrors(it) }
 
         connection.get()
     }
