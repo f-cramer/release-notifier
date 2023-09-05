@@ -20,6 +20,12 @@ class BsToSeriesService(
         val language = Locale.forLanguageTag(languageString).toLanguageTag()
 
         val document = jsoupService.getDocument(series.url, timeout = Duration.ofMinutes(1))
+
+        // check for bs.to errors to ignore
+        document.selectFirst("body")?.ownText()
+            ?.takeIf { IGNORED_ERROR_BODY_REGEX.matches(it) }
+            ?.let { return }
+
         val name = document.selectFirst(NAME_SELECTOR)
             ?.textNodes()?.firstOrNull()?.text()?.trim() ?: error("could not find series name at ($NAME_SELECTOR)")
         val seasonsElements = document.select(".serie .seasons li a")
@@ -110,5 +116,7 @@ class BsToSeriesService(
         private const val NAME_SELECTOR = ".serie #sp_left h2"
         private val SERIES_URL_REGEX = """https://bs.to/serie/(.+)/(.+)""".toRegex()
         private val SEASON_URL_REGEX = """https://bs.to/serie/(.+)/(\d+)/(.+)""".toRegex()
+
+        private val IGNORED_ERROR_BODY_REGEX = """Database connection could not be established: SQLSTATE\[[A-Z0-9]+] \[\d+] Too many connections""".toRegex()
     }
 }
