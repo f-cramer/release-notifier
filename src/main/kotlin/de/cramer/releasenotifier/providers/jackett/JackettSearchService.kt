@@ -5,7 +5,6 @@ import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearchResult
 import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Element
-import org.jsoup.parser.Parser
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.time.Duration
@@ -15,7 +14,7 @@ class JackettSearchService(
     private val jsoupService: JsoupService,
 ) {
     fun update(search: JackettSearch) {
-        val document = jsoupService.getDocument(search.url, parser = Parser.xmlParser(), timeout = Duration.ofMinutes(2))
+        val document = jsoupService.getDocument(search.url, timeout = Duration.ofMinutes(2))
         val rootElement = document.selectFirst(":root")!!
         if (rootElement.tagName() == "error") {
             val code = rootElement.attr("code")
