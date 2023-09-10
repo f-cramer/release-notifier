@@ -5,6 +5,7 @@ import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearchResult
 import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Element
+import org.slf4j.Logger
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.time.Duration
@@ -12,14 +13,21 @@ import java.time.Duration
 @Service
 class JackettSearchService(
     private val jsoupService: JsoupService,
+    private val log: Logger,
 ) {
     fun update(search: JackettSearch) {
-        val (document, statusCode) = jsoupService.getDocument(search.url, timeout = Duration.ofMinutes(2))
+        val (document, statusCode) = jsoupService.getDocument(search.url, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
         val rootElement = document.selectFirst(":root")!!
         if (rootElement.tagName() == "error") {
             val code = rootElement.attr("code")
             val description = rootElement.attr("description")
             error("error while executing request for search \"${search.name}\" (code: $code, description, $description)")
+        }
+
+        @Suppress("MagicNumber")
+        if (statusCode >= 400) {
+            log.error("{}", document)
+            error("unknown error while executing request for search \"${search.name}\" (code: $statusCode)")
         }
 
         val ignore = search.ignorePattern?.toRegex(RegexOption.IGNORE_CASE)
