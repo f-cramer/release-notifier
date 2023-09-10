@@ -21,7 +21,7 @@ class JackettSearchService(
         if (rootElement.tagName() == "error") {
             val code = rootElement.attr("code")
             val description = rootElement.attr("description")
-            error("error while executing request for search \"${search.name}\" (code: $code, description, $description)")
+            error("error while executing request for search \"${search.name}\" (code: $code, description: $description)")
         }
 
         @Suppress("MagicNumber")
