@@ -12,13 +12,13 @@ class DownmagazMagazineService(
     private val jsoupService: JsoupService,
 ) {
     fun update(magazine: DownmagazMagazine) {
-        val document = jsoupService.getDocument(magazine.url)
+        val (document, _) = jsoupService.getDocument(magazine.url)
         val pages = document.select(".catPages a")
         val pageCount = pages[pages.size - 2].text().toInt()
 
         val documents = sequenceOf(document) + generateSequence(2) { it + 1 }.takeWhile { it <= pageCount }
             .map { magazine.url + "page/$it/" }
-            .map { jsoupService.getDocument(it) }
+            .map { jsoupService.getDocument(it).document }
         documents.forEach { magazine.addIssues(it) }
     }
 

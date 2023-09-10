@@ -1,6 +1,7 @@
 package de.cramer.releasenotifier.services
 
 import de.cramer.releasenotifier.utils.TimedLock
+import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.parser.Parser
@@ -23,7 +24,7 @@ class JsoupService(
         timeout: Duration? = null,
         ignoreHttpErrors: Boolean? = null,
         lockKey: String = uri.host,
-    ): Document = locks.computeIfAbsent(lockKey) {
+    ): Response = locks.computeIfAbsent(lockKey) {
         TimedLock(minimumWaitTimeBetweenRequests, log = log)
     }.withLock {
         val connection = Jsoup.connect(uri.toString())
@@ -31,6 +32,14 @@ class JsoupService(
         timeout?.let { connection.timeout(it.toMillis().toInt()) }
         ignoreHttpErrors?.let { connection.ignoreHttpErrors(it) }
 
-        connection.get()
+        val response = connection
+            .method(Connection.Method.GET)
+            .execute()
+        Response(response.parse(), response.statusCode())
     }
+
+    data class Response(
+        val document: Document,
+        val statusCode: Int,
+    )
 }

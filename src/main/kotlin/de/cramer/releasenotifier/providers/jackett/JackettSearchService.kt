@@ -14,7 +14,7 @@ class JackettSearchService(
     private val jsoupService: JsoupService,
 ) {
     fun update(search: JackettSearch) {
-        val document = jsoupService.getDocument(search.url, timeout = Duration.ofMinutes(2))
+        val (document, statusCode) = jsoupService.getDocument(search.url, timeout = Duration.ofMinutes(2))
         val rootElement = document.selectFirst(":root")!!
         if (rootElement.tagName() == "error") {
             val code = rootElement.attr("code")
