@@ -4,16 +4,23 @@ import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazIssue
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazMagazine
 import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Document
+import org.slf4j.Logger
 import org.springframework.stereotype.Service
 import java.net.URI
 
 @Service
 class DownmagazMagazineService(
     private val jsoupService: JsoupService,
+    private val log: Logger,
 ) {
     fun update(magazine: DownmagazMagazine) {
         val (document, _) = jsoupService.getDocument(magazine.url, JSOUP_CONFIGURATION_KEY)
         val pages = document.select(".catPages a")
+
+        if (pages.isEmpty()) {
+            log.trace("{}", document)
+            error("could not find page information for magazine at ${magazine.url}")
+        }
         val pageCount = pages[pages.size - 2].text().toInt()
 
         val documents = sequenceOf(document) + generateSequence(2) { it + 1 }.takeWhile { it <= pageCount }
