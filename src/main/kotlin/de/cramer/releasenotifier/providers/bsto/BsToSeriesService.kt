@@ -19,7 +19,7 @@ class BsToSeriesService(
         val languageString = SERIES_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[2] } ?: SEASON_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[1] } ?: return
         val language = Locale.forLanguageTag(languageString).toLanguageTag()
 
-        val (document, _) = jsoupService.getDocument(series.url, timeout = Duration.ofMinutes(1))
+        val (document, _) = jsoupService.getDocument(series.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(1))
 
         // check for bs.to errors to ignore
         document.selectFirst("body")?.ownText()
@@ -68,7 +68,7 @@ class BsToSeriesService(
     }
 
     private fun BsToSeason.addEpisodes() {
-        val (latestSeasonDocument, _) = jsoupService.getDocument(url)
+        val (latestSeasonDocument, _) = jsoupService.getDocument(url, JSOUP_CONFIGURATION_KEY)
         val selectedLanguage = latestSeasonDocument.selectFirst(".serie .series-language [selected]")?.attr("value") ?: return
         if (selectedLanguage == series.language) {
             val episodeNodes = latestSeasonDocument.select(".episodes tr:not(.disabled)").toList()
@@ -113,6 +113,8 @@ class BsToSeriesService(
     }
 
     companion object {
+        private const val JSOUP_CONFIGURATION_KEY = "bsto"
+
         private const val NAME_SELECTOR = ".serie #sp_left h2"
         private val SERIES_URL_REGEX = """https://bs.to/serie/(.+)/(.+)""".toRegex()
         private val SEASON_URL_REGEX = """https://bs.to/serie/(.+)/(\d+)/(.+)""".toRegex()

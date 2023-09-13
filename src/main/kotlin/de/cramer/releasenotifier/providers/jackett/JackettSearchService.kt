@@ -16,7 +16,7 @@ class JackettSearchService(
     private val log: Logger,
 ) {
     fun update(search: JackettSearch) {
-        val (document, statusCode) = jsoupService.getDocument(search.url, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
+        val (document, statusCode) = jsoupService.getDocument(search.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
         val rootElement = document.selectFirst(":root")!!
         if (rootElement.tagName() == "error") {
             val code = rootElement.attr("code")
@@ -86,5 +86,9 @@ class JackettSearchService(
         }
         replacements.forEach { (regex, replacement) -> t = regex.replace(t, replacement) }
         return t
+    }
+
+    companion object {
+        private const val JSOUP_CONFIGURATION_KEY = "jackett"
     }
 }

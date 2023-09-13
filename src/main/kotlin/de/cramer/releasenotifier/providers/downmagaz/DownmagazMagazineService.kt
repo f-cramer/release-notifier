@@ -12,13 +12,13 @@ class DownmagazMagazineService(
     private val jsoupService: JsoupService,
 ) {
     fun update(magazine: DownmagazMagazine) {
-        val (document, _) = jsoupService.getDocument(magazine.url)
+        val (document, _) = jsoupService.getDocument(magazine.url, JSOUP_CONFIGURATION_KEY)
         val pages = document.select(".catPages a")
         val pageCount = pages[pages.size - 2].text().toInt()
 
         val documents = sequenceOf(document) + generateSequence(2) { it + 1 }.takeWhile { it <= pageCount }
             .map { magazine.url + "page/$it/" }
-            .map { jsoupService.getDocument(it).document }
+            .map { jsoupService.getDocument(it, JSOUP_CONFIGURATION_KEY).document }
         documents.forEach { magazine.addIssues(it) }
     }
 
@@ -36,5 +36,9 @@ class DownmagazMagazineService(
         val separator = if (path.endsWith("/")) "" else "/"
         val newPath = path + separator + suffix
         return resolve(newPath)
+    }
+
+    companion object {
+        private const val JSOUP_CONFIGURATION_KEY = "downmagaz"
     }
 }
