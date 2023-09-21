@@ -57,7 +57,12 @@ tasks.withType<Test> {
 }
 
 ktlint {
-    version.set("0.50.0")
+    version.set("1.0.0")
+    additionalEditorconfig.set(
+        mapOf(
+            "ktlint_code_style" to "intellij_idea",
+        ),
+    )
     reporters {
         reporter(if (isCi) ReporterType.CHECKSTYLE else ReporterType.HTML)
     }

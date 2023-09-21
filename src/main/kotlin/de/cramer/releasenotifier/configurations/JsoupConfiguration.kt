@@ -18,5 +18,6 @@ data class JsoupConfiguration(
 }
 
 data class JsoupConnectionProperties @ConstructorBinding constructor(
-    val delayBetweenRequests: Duration, // no default value because of bug in Spring Boot
+    // no default value because of bug in Spring Boot
+    val delayBetweenRequests: Duration,
 )
