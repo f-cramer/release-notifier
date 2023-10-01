@@ -1,0 +1,6 @@
+package de.cramer.releasenotifier.providers.tabletoptactics
+
+import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTacticsConfiguration
+import org.springframework.data.jpa.repository.JpaRepository
+
+interface TabletopTacticsConfigurationRepository : JpaRepository<TabletopTacticsConfiguration, Long>
