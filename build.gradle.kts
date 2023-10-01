@@ -19,6 +19,7 @@ val isCi = System.getenv("CI") == "true"
 
 ext["h2.version"] = "2.2.220"
 ext["snakeyaml.version"] = "2.1"
+ext["selenium.version"] = "4.13.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -35,6 +36,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jsoup:jsoup:1.16.1")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.9.1")
+    implementation("org.seleniumhq.selenium:selenium-firefox-driver")
+    implementation("org.seleniumhq.selenium:selenium-support")
     runtimeOnly("org.postgresql:postgresql")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
