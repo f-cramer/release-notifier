@@ -30,7 +30,7 @@ class TabletopTacticsConfigurationService {
         }
         val driver = FirefoxDriver(options)
         try {
-            val wait = WebDriverWait(driver, Duration.ofSeconds(10))
+            val wait = WebDriverWait(driver, Duration.ofMinutes(1))
 
             driver.get("https://tabletoptactics.tv/log-in/")
             @Suppress("MagicNumber")
