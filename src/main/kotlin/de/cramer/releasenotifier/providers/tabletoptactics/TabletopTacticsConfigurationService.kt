@@ -82,11 +82,8 @@ class TabletopTacticsConfigurationService {
         switchTo().window(lastTab)
         wait.until(elementToBeClickable(By.id("qtcontents")))
 
-        val videoUrl = if (findElements(By.className("perfmatters-lazy-youtube")).isEmpty()) {
-            getTTUrl(wait)
-        } else {
-            getYoutubeUrl()
-        }
+        val videoUrl = getYoutubeUrl()
+            ?: getTTUrl(wait)
 
         val existingVideo = configuration.videos.find {
             it.name == name && it.date == date
@@ -104,8 +101,21 @@ class TabletopTacticsConfigurationService {
         switchTo().window(originalTab)
     }
 
-    private fun WebDriver.getYoutubeUrl(): URI {
-        return URI.create(findElement(By.className("perfmatters-lazy-youtube")).getAttribute("data-src"))
+    private fun WebDriver.getYoutubeUrl(): URI? {
+        val uri = findElements(By.className("perfmatters-lazy-youtube"))
+            .firstOrNull()
+            ?.getAttribute("data-src")
+            ?.runCatching(URI::create)
+            ?.getOrNull()
+        return uri ?: getYoutubeFallbackUrl()
+    }
+
+    private fun WebDriver.getYoutubeFallbackUrl(): URI? {
+        return findElements(By.cssSelector("#qtcontents .qt-the-content > p"))
+            .firstOrNull()
+            ?.text
+            ?.runCatching(URI::create)
+            ?.getOrNull()
     }
 
     private fun WebDriver.getTTUrl(wait: Wait<WebDriver>): URI {
