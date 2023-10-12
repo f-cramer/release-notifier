@@ -18,8 +18,8 @@ class NotificationServiceConfiguration {
     fun notificationService(
         mailSender: JavaMailSender?,
         mailProperties: MailProperties?,
-        @Value("\${check.recipient.name:#null}") recipientName: String?,
-        @Value("\${check.recipient.address:#null}") recipientAddress: String?,
+        @Value("\${check.recipient.name:#{null}}") recipientName: String?,
+        @Value("\${check.recipient.address:#{null}}") recipientAddress: String?,
     ): NotificationService = if (mailSender == null || mailProperties == null || recipientName == null || recipientAddress == null) {
         LoggingNotificationService()
     } else {
