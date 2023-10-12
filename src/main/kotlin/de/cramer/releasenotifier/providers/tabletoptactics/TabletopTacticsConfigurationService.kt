@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable
 import org.openqa.selenium.support.ui.Wait
 import org.openqa.selenium.support.ui.WebDriverWait
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.time.Duration
@@ -23,9 +24,12 @@ import java.time.temporal.ChronoField
 import java.util.Locale
 
 @Service
-class TabletopTacticsConfigurationService {
+class TabletopTacticsConfigurationService(
+    @Value("\${selenium.firefox.binary-path:#{null}}") private val firefoxBinaryPath: String?,
+) {
     fun update(configuration: TabletopTacticsConfiguration) {
         val options = FirefoxOptions().apply {
+            firefoxBinaryPath?.let { setBinary(it) }
             addArguments("-headless")
         }
         val driver = FirefoxDriver(options)
