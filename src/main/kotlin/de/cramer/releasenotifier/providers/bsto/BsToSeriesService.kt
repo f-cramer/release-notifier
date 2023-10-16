@@ -116,8 +116,8 @@ class BsToSeriesService(
         private const val JSOUP_CONFIGURATION_KEY = "bsto"
 
         private const val NAME_SELECTOR = ".serie #sp_left h2"
-        private val SERIES_URL_REGEX = """https://bs.to/serie/(.+)/(.+)""".toRegex()
-        private val SEASON_URL_REGEX = """https://bs.to/serie/(.+)/(\d+)/(.+)""".toRegex()
+        private val SERIES_URL_REGEX = """https://bs.to/serie/([^/]+)/([^/]+)/?""".toRegex()
+        private val SEASON_URL_REGEX = """https://bs.to/serie/([^/]+)/(\d+)/([^/]+)/?""".toRegex()
 
         private val IGNORED_ERROR_BODY_REGEX = """Database connection could not be established: SQLSTATE\[[A-Z0-9]+] \[\d+] Too many connections""".toRegex()
     }
