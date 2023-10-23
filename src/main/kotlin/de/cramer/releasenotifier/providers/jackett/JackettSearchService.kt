@@ -21,6 +21,9 @@ class JackettSearchService(
         if (rootElement.tagName() == "error") {
             val code = rootElement.attr("code")
             val description = rootElement.attr("description")
+            if (IGNORED_ERROR_DESCRIPTIONS.any { it in description }) {
+                return
+            }
             error("error while executing request for search \"${search.name}\" (code: $code, description: $description)")
         }
 
@@ -90,5 +93,8 @@ class JackettSearchService(
 
     companion object {
         private const val JSOUP_CONFIGURATION_KEY = "jackett"
+        private val IGNORED_ERROR_DESCRIPTIONS = setOf(
+            "The tracker seems to be down.",
+        )
     }
 }
