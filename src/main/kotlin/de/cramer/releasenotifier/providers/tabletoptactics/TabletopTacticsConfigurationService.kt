@@ -90,12 +90,13 @@ class TabletopTacticsConfigurationService(
             ?: getTTUrl(wait)
 
         val existingVideo = configuration.videos.find {
-            it.name == name && it.date == date
+            (it.name == name || it.url == videoUrl) && it.date == date
         }
         if (existingVideo == null) {
             val video = TabletopTacticsVideo(0, name, date, videoUrl, imageUrl, configuration)
             configuration.videos += video
         } else {
+            existingVideo.name = name
             existingVideo.url = videoUrl
             existingVideo.thumbnail = imageUrl
         }
