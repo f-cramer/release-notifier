@@ -7,6 +7,7 @@ import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Element
 import org.slf4j.Logger
 import org.springframework.stereotype.Service
+import java.net.SocketTimeoutException
 import java.net.URI
 import java.time.Duration
 
@@ -16,7 +17,12 @@ class JackettSearchService(
     private val log: Logger,
 ) {
     fun update(search: JackettSearch) {
-        val (document, statusCode) = jsoupService.getDocument(search.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
+        val (document, statusCode) = try {
+            jsoupService.getDocument(search.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
+        } catch (@Suppress("SwallowedException") e: SocketTimeoutException) {
+            return
+        }
+
         val rootElement = document.selectFirst(":root")!!
         if (rootElement.tagName() == "error") {
             val code = rootElement.attr("code")
