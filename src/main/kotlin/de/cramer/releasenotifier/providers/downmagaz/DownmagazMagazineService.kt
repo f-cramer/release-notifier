@@ -14,7 +14,16 @@ class DownmagazMagazineService(
     private val log: Logger,
 ) {
     fun update(magazine: DownmagazMagazine) {
-        val (document, _) = jsoupService.getDocument(magazine.url, JSOUP_CONFIGURATION_KEY)
+        val (document, statusCode) = jsoupService.getDocument(magazine.url, JSOUP_CONFIGURATION_KEY, ignoreHttpErrors = true)
+        if (statusCode in IGNORED_STATUS_CODES) {
+            return
+        } else {
+            val statusCodeClass = statusCode / 100
+            @Suppress("MagicNumber")
+            if (statusCodeClass == 4 || statusCodeClass == 5) {
+                error("received status code $statusCode when loading ${magazine.url}")
+            }
+        }
         val pages = document.select(".catPages a")
 
         if (pages.isEmpty()) {
@@ -47,5 +56,6 @@ class DownmagazMagazineService(
 
     companion object {
         private const val JSOUP_CONFIGURATION_KEY = "downmagaz"
+        private val IGNORED_STATUS_CODES = setOf(521)
     }
 }
