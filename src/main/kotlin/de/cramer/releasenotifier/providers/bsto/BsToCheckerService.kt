@@ -28,7 +28,7 @@ class BsToCheckerService(
         }
 
         return newChildren.groupBy { it.season.series }.asSequence()
-            .sortedWith(compareBy<Map.Entry<BsToSeries, List<BsToEpisode>>> { it.key.name }.thenBy { it.key.language })
+            .sortedWith(EPISODES_BY_SERIES_COMPARATOR)
             .map { (series, episodes) ->
                 val context = BsToContext(
                     series.seasons.maxOf { it.number }.toString().length,
@@ -71,6 +71,7 @@ class BsToCheckerService(
     )
 
     companion object {
+        private val EPISODES_BY_SERIES_COMPARATOR = compareBy<Map.Entry<BsToSeries, List<BsToEpisode>>> { it.key.name }.thenBy { it.key.language }
         private fun Int.format(length: Int): String {
             return String.format(Locale.ROOT, "%0${length}d", this)
         }
