@@ -5,6 +5,7 @@ plugins {
     id("org.springframework.boot") version "3.1.5"
     id("io.spring.dependency-management") version "1.1.3"
     kotlin("jvm") version "1.9.20"
+    kotlin("kapt") version "1.9.20"
     kotlin("plugin.spring") version "1.9.20"
     kotlin("plugin.jpa") version "1.9.20"
 
@@ -39,6 +40,7 @@ dependencies {
     implementation("org.seleniumhq.selenium:selenium-firefox-driver")
     implementation("org.seleniumhq.selenium:selenium-support")
     runtimeOnly("org.postgresql:postgresql")
+    kapt("org.hibernate.orm:hibernate-jpamodelgen")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.willowtreeapps.assertk:assertk:0.27.0")
@@ -57,6 +59,10 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 ktlint {
