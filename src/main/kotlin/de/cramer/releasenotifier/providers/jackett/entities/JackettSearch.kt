@@ -37,6 +37,8 @@ class JackettSearch(
     @Column(name = "ignore_pattern")
     var ignorePattern: String?,
 
+    var enabled: Boolean,
+
     @ElementCollection
     @CollectionTable(name = "jackett_searches_replacements", joinColumns = [JoinColumn(name = "search_id")])
     @MapKeyColumn(name = "pattern")
@@ -46,7 +48,7 @@ class JackettSearch(
     @OneToMany(mappedBy = "search", cascade = [CascadeType.ALL])
     var results: MutableList<JackettSearchResult>,
 ) {
-    constructor(name: String, url: URI) : this(0, name, url, null, null, null, mutableMapOf(), mutableListOf())
+    constructor(name: String, url: URI) : this(0, name, url, null, null, null, true, mutableMapOf(), mutableListOf())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -2,6 +2,7 @@ package de.cramer.releasenotifier.providers.tabletoptactics
 
 import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTacticsConfiguration
 import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTacticsVideo
+import de.cramer.releasenotifier.providers.tabletoptactics.specifications.TabletopTacticsConfigurationsByEnabledSpecification
 import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
@@ -14,7 +15,7 @@ class TabletopTacticsCheckerService(
     private val configurationService: TabletopTacticsConfigurationService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
 ) : AbstractCheckerSerivce<TabletopTacticsConfiguration, TabletopTacticsVideo>() {
-    override fun findAll(): List<TabletopTacticsConfiguration> = configurationRepository.findAll()
+    override fun findAll(): List<TabletopTacticsConfiguration> = configurationRepository.findAll(TabletopTacticsConfigurationsByEnabledSpecification())
 
     override fun getChildren(t: TabletopTacticsConfiguration) = t.videos
 

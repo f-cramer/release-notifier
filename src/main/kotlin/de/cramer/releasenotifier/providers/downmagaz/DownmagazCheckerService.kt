@@ -2,6 +2,7 @@ package de.cramer.releasenotifier.providers.downmagaz
 
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazIssue
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazMagazine
+import de.cramer.releasenotifier.providers.downmagaz.specifications.DownmagazMagazinesByEnabledSpecification
 import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
@@ -13,7 +14,7 @@ class DownmagazCheckerService(
     private val magazineService: DownmagazMagazineService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
 ) : AbstractCheckerSerivce<DownmagazMagazine, DownmagazIssue>() {
-    override fun findAll(): List<DownmagazMagazine> = magazineRepository.findAll()
+    override fun findAll(): List<DownmagazMagazine> = magazineRepository.findAll(DownmagazMagazinesByEnabledSpecification())
 
     override fun getChildren(t: DownmagazMagazine) = t.issues
 

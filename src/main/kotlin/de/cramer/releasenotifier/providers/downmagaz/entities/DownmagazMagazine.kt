@@ -24,10 +24,12 @@ class DownmagazMagazine(
     @Column(name = "url")
     var url: URI,
 
+    var enabled: Boolean,
+
     @OneToMany(mappedBy = "magazine", cascade = [CascadeType.ALL])
     val issues: MutableList<DownmagazIssue>,
 ) {
-    constructor(name: String, url: URI) : this(0, name, url, mutableListOf())
+    constructor(name: String, url: URI) : this(0, name, url, true, mutableListOf())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

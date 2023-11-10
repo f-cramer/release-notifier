@@ -3,6 +3,7 @@ package de.cramer.releasenotifier.providers.jackett
 import de.cramer.releasenotifier.providers.jackett.entities.JackettRelease
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearchResult
+import de.cramer.releasenotifier.providers.jackett.specifications.JackettSearchesByEnabledSpecification
 import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
@@ -15,7 +16,7 @@ class JackettCheckerService(
     private val searchService: JackettSearchService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
 ) : AbstractCheckerSerivce<JackettSearch, JackettRelease>() {
-    override fun findAll(): List<JackettSearch> = searchRepository.findAll()
+    override fun findAll(): List<JackettSearch> = searchRepository.findAll(JackettSearchesByEnabledSpecification())
 
     override fun getChildren(t: JackettSearch) = t.results.flatMap { it.releases }
 

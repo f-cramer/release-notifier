@@ -3,6 +3,7 @@ package de.cramer.releasenotifier.providers.bsto
 import de.cramer.releasenotifier.providers.bsto.entities.BsToEpisode
 import de.cramer.releasenotifier.providers.bsto.entities.BsToLink
 import de.cramer.releasenotifier.providers.bsto.entities.BsToSeries
+import de.cramer.releasenotifier.providers.bsto.specifications.BsToSeriesByEnabledSpecification
 import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
@@ -16,7 +17,7 @@ class BsToCheckerService(
     private val seriesService: BsToSeriesService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
 ) : AbstractCheckerSerivce<BsToSeries, BsToEpisode>() {
-    override fun findAll(): List<BsToSeries> = seriesRepository.findAll()
+    override fun findAll(): List<BsToSeries> = seriesRepository.findAll(BsToSeriesByEnabledSpecification())
 
     override fun getChildren(t: BsToSeries) = t.seasons.flatMap { it.episodes }
 

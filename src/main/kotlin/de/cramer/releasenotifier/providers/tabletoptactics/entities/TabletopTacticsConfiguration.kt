@@ -23,6 +23,8 @@ class TabletopTacticsConfiguration(
     @Column(name = "password")
     var password: String,
 
+    var enabled: Boolean,
+
     @OneToMany(mappedBy = "configuration", cascade = [CascadeType.ALL])
     var videos: MutableList<TabletopTacticsVideo>,
 ) {
