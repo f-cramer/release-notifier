@@ -50,7 +50,7 @@ class TabletopTacticsConfigurationService(
             wait.until(elementToBeClickable(By.name("avatar_submit")))
             driver.findElement(By.linkText("SHOWS")).click()
 
-            val videosSelector = By.cssSelector(".type-post.status-publish.format-video")
+            val videosSelector = By.cssSelector(".type-post.status-publish")
             wait.until(elementToBeClickable(videosSelector))
 
             val videoElements = driver.findElements(videosSelector).filterNotNull()
@@ -74,14 +74,18 @@ class TabletopTacticsConfigurationService(
         val background = element.findElement(By.className("qt-header-bg"))
         val imageUrl = URI.create(background.getAttribute("data-bgimage"))
         executeScript("""arguments[0].scrollIntoView({ block: "center", inline: "center" })""", background)
+        @Suppress("MagicNumber")
         Actions(this)
             .keyDown(Keys.CONTROL)
-            .moveToElement(background)
+            .moveToElement(background, 0, background.size.height / 3)
             .click()
             .perform()
 
         val originalTab = windowHandle
         val lastTab = windowHandles.last()
+        if (originalTab == lastTab) {
+            error("could not open new tab for video \"$name\"")
+        }
 
         switchTo().window(lastTab)
         wait.until(elementToBeClickable(By.id("qtcontents")))
