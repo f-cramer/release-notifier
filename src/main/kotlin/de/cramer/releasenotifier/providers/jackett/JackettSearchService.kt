@@ -68,11 +68,11 @@ class JackettSearchService(
             .filterNot { it.scheme == url.scheme && it.host == url.host && it.port == url.port }
             .toSet()
 
-        val existingResult = results.find { it.name == resultName }
+        val existingResult = results.find { it.name.equals(resultName, ignoreCase = true) }
         val result = existingResult ?: JackettSearchResult(resultName, this)
 
         val releaseTitle = title.replace(' ', '.').trim()
-        val existingRelease = result.releases.find { it.title == releaseTitle }
+        val existingRelease = result.releases.find { it.title.equals(releaseTitle, ignoreCase = true) }
         val release = existingRelease ?: run {
             val release = JackettRelease(releaseTitle, result)
             result.releases += release

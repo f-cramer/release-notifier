@@ -103,7 +103,7 @@ class BsToSeriesService(
         val url = URI(element.absUrl("href"))
         val hoster = element.attr("title")
 
-        val existingLink = links.find { it.hoster == hoster }
+        val existingLink = links.find { it.hoster.equals(hoster, ignoreCase = true) }
         if (existingLink == null) {
             links += BsToLink(0, hoster, url, this)
         } else {
