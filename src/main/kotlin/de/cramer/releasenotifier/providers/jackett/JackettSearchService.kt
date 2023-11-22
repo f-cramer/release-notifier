@@ -71,7 +71,7 @@ class JackettSearchService(
         val existingResult = results.find { it.name == resultName }
         val result = existingResult ?: JackettSearchResult(resultName, this)
 
-        val releaseTitle = title.replace(' ', '.')
+        val releaseTitle = title.replace(' ', '.').trim()
         val existingRelease = result.releases.find { it.title == releaseTitle }
         val release = existingRelease ?: run {
             val release = JackettRelease(releaseTitle, result)
@@ -94,7 +94,7 @@ class JackettSearchService(
             nameSuffix.findAll(t).lastOrNull()?.takeIf { it.range.last == t.length - 1 }?.let { t = t.substring(0, it.range.first) } ?: return null
         }
         replacements.forEach { (regex, replacement) -> t = regex.replace(t, replacement) }
-        return t
+        return t.trim()
     }
 
     companion object {
