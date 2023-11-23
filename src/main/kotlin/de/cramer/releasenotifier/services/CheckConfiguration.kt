@@ -6,13 +6,14 @@ import kotlinx.html.body
 import kotlinx.html.html
 import kotlinx.html.pre
 import kotlinx.html.stream.createHTML
-import org.apache.commons.lang3.exception.ExceptionUtils
 import org.slf4j.Logger
 import org.springframework.aop.framework.AopProxyUtils
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.concurrent.Callable
 
 @Service
@@ -47,7 +48,9 @@ class CheckConfiguration(
         val message = createHTML().html {
             body {
                 pre {
-                    text(ExceptionUtils.getStackTrace(this@createMessage))
+                    val writer = StringWriter()
+                    this@createMessage.printStackTrace(PrintWriter(writer, true))
+                    text(writer.toString())
                 }
             }
         }

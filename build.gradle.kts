@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
-    id("org.springframework.boot") version "3.1.6"
+    id("org.springframework.boot") version "3.2.0"
     id("io.spring.dependency-management") version "1.1.4"
     kotlin("jvm") version "1.9.21"
     kotlin("kapt") version "1.9.21"
@@ -18,9 +18,6 @@ version = "0.0.1-SNAPSHOT"
 
 val isCi = System.getenv("CI") == "true"
 
-ext["h2.version"] = "2.2.220"
-ext["snakeyaml.version"] = "2.1"
-ext["selenium.version"] = "4.13.0"
 ext["kotlin.version"] = kotlin.coreLibrariesVersion
 
 java {
