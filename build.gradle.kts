@@ -4,10 +4,10 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     id("org.springframework.boot") version "3.1.5"
     id("io.spring.dependency-management") version "1.1.4"
-    kotlin("jvm") version "1.9.20"
-    kotlin("kapt") version "1.9.20"
-    kotlin("plugin.spring") version "1.9.20"
-    kotlin("plugin.jpa") version "1.9.20"
+    kotlin("jvm") version "1.9.21"
+    kotlin("kapt") version "1.9.21"
+    kotlin("plugin.spring") version "1.9.21"
+    kotlin("plugin.jpa") version "1.9.21"
 
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("io.gitlab.arturbosch.detekt") version "1.23.3"
@@ -21,6 +21,7 @@ val isCi = System.getenv("CI") == "true"
 ext["h2.version"] = "2.2.220"
 ext["snakeyaml.version"] = "2.1"
 ext["selenium.version"] = "4.13.0"
+ext["kotlin.version"] = kotlin.coreLibrariesVersion
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
