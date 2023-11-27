@@ -33,7 +33,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.flywaydb:flyway-core")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jsoup:jsoup:1.16.2")
+    implementation("org.jsoup:jsoup:1.17.1")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.9.1")
     implementation("org.seleniumhq.selenium:selenium-firefox-driver")
     implementation("org.seleniumhq.selenium:selenium-support")
