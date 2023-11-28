@@ -14,11 +14,13 @@ import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable
 import org.openqa.selenium.support.ui.Wait
 import org.openqa.selenium.support.ui.WebDriverWait
+import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField
 import java.util.Locale
@@ -26,6 +28,7 @@ import java.util.Locale
 @Service
 class TabletopTacticsConfigurationService(
     @Value("\${selenium.firefox.binary-path:#{null}}") private val firefoxBinaryPath: String?,
+    private val log: Logger,
 ) {
     fun update(configuration: TabletopTacticsConfiguration) {
         val options = FirefoxOptions().apply {
@@ -71,7 +74,13 @@ class TabletopTacticsConfigurationService(
             .joinToString(separator = "")
         val date = LocalDate.parse(dateText.trim(), DATE_FORMATTER)
         val name = element.findElement(By.cssSelector(".qt-title a")).text.trim()
-        val background = element.findElement(By.className("qt-header-bg"))
+        val background = try {
+            // it can happen that videos do not contain a background right after being uploaded
+            element.findElement(By.className("qt-header-bg"))
+        } catch (e: Exception) {
+            log.info(e.message, e)
+            return
+        }
         val imageUrl = URI.create(background.getAttribute("data-bgimage"))
         executeScript("""arguments[0].scrollIntoView({ block: "center", inline: "center" })""", background)
         @Suppress("MagicNumber")
