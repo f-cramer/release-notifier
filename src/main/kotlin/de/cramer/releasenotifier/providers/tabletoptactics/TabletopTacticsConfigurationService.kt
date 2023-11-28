@@ -64,7 +64,7 @@ class TabletopTacticsConfigurationService(
 
     private fun FirefoxDriver.updateVideo(element: WebElement, wait: WebDriverWait, configuration: TabletopTacticsConfiguration) {
         val details = element.findElement(By.className("qt-details"))
-        var dateText = Jsoup.parse(details.getAttribute("outerHTML").trim())
+        val dateText = Jsoup.parse(details.getAttribute("outerHTML").trim())
             .select("body > ${details.tagName}").textNodes()
             .map { it.text().trim() }
             .filter { it.isNotEmpty() }
@@ -135,7 +135,7 @@ class TabletopTacticsConfigurationService(
     }
 
     companion object {
-        val DATE_FORMATTER = DateTimeFormatterBuilder()
+        val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .appendText(ChronoField.MONTH_OF_YEAR)
             .appendLiteral(" ")
