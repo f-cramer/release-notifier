@@ -34,7 +34,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jsoup:jsoup:1.17.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.9.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.10.1")
     implementation("org.seleniumhq.selenium:selenium-firefox-driver")
     implementation("org.seleniumhq.selenium:selenium-support")
     runtimeOnly("org.postgresql:postgresql")
