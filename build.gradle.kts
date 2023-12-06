@@ -41,7 +41,7 @@ dependencies {
     kapt("org.hibernate.orm:hibernate-jpamodelgen")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("com.willowtreeapps.assertk:assertk:0.27.0")
+    testImplementation("com.willowtreeapps.assertk:assertk:0.28.0")
     testImplementation("net.datafaker:datafaker:2.0.1")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
     testRuntimeOnly("com.h2database:h2")
