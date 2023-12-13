@@ -5,6 +5,7 @@ import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTact
 import org.jsoup.Jsoup
 import org.openqa.selenium.By
 import org.openqa.selenium.Keys
+import org.openqa.selenium.OutputType
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.firefox.FirefoxDriver
@@ -17,9 +18,11 @@ import org.openqa.selenium.support.ui.WebDriverWait
 import org.slf4j.Logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.io.File
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField
@@ -60,6 +63,14 @@ class TabletopTacticsConfigurationService(
             videoElements.forEach {
                 driver.updateVideo(it, wait, configuration)
             }
+        } catch (e: Exception) {
+            val now = LocalDateTime.now().format(FILE_DATE_FORMATTER)
+            val screenshot = driver.getFullPageScreenshotAs(OutputType.FILE)
+            screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
+            screenshot.delete()
+            val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
+            pageSourceFile.writeText(driver.pageSource)
+            throw e
         } finally {
             driver.quit()
         }
@@ -152,5 +163,6 @@ class TabletopTacticsConfigurationService(
             .appendLiteral(", ")
             .appendValue(ChronoField.YEAR)
             .toFormatter(Locale.UK)
+        private val FILE_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSS")
     }
 }
