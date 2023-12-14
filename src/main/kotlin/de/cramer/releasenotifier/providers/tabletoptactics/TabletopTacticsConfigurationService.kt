@@ -10,7 +10,7 @@ import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.firefox.FirefoxOptions
-import org.openqa.selenium.interactions.Actions
+import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable
 import org.openqa.selenium.support.ui.Wait
@@ -147,8 +147,17 @@ class TabletopTacticsConfigurationService(
             ?.getOrNull()
     }
 
-    private fun WebDriver.getTTUrl(wait: Wait<WebDriver>): URI {
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("ttcdn")))
+    private fun RemoteWebDriver.getTTUrl(wait: Wait<WebDriver>): URI {
+        val ttcdnId = "ttcdn"
+        val videoTagName = "video"
+
+        val anySelector = By.cssSelector("#$ttcdnId, $videoTagName")
+        val element = wait.until { findElements(anySelector).first() }
+
+        if (element.getAttribute("id") == ttcdnId) {
+            switchTo().frame(element)
+        }
+
         val playerSelector = By.tagName("video")
         wait.until(elementToBeClickable(playerSelector))
         return URI.create(findElement(playerSelector).findElement(By.tagName("source")).getAttribute("src"))
