@@ -4,10 +4,10 @@ import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTact
 import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTacticsVideo
 import org.jsoup.Jsoup
 import org.openqa.selenium.By
-import org.openqa.selenium.Keys
 import org.openqa.selenium.OutputType
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
+import org.openqa.selenium.WindowType
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.firefox.FirefoxOptions
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -93,21 +93,14 @@ class TabletopTacticsConfigurationService(
             return
         }
         val imageUrl = URI.create(background.getAttribute("data-bgimage"))
-        executeScript("""arguments[0].scrollIntoView({ block: "center", inline: "center" })""", background)
-        @Suppress("MagicNumber")
-        Actions(this)
-            .keyDown(Keys.CONTROL)
-            .moveToElement(background, 0, background.size.height / 3)
-            .click()
-            .perform()
 
         val originalTab = windowHandle
-        val lastTab = windowHandles.last()
-        if (originalTab == lastTab) {
-            error("could not open new tab for video \"$name\"")
-        }
 
-        switchTo().window(lastTab)
+        // load video page url in new tab
+        val videoPageUrl = background.getAttribute("href")
+        switchTo().newWindow(WindowType.TAB)
+        get(videoPageUrl)
+
         wait.until(elementToBeClickable(By.id("qtcontents")))
 
         val videoUrl = getYoutubeUrl()
