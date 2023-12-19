@@ -5,6 +5,7 @@ import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTact
 import org.jsoup.Jsoup
 import org.openqa.selenium.By
 import org.openqa.selenium.OutputType
+import org.openqa.selenium.TimeoutException
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.WindowType
@@ -99,28 +100,36 @@ class TabletopTacticsConfigurationService(
         // load video page url in new tab
         val videoPageUrl = background.getAttribute("href")
         switchTo().newWindow(WindowType.TAB)
-        get(videoPageUrl)
 
-        wait.until(elementToBeClickable(By.id("qtcontents")))
+        try {
+            try {
+                // loading errors, it will work next time
+                get(videoPageUrl)
+            } catch (e: TimeoutException) {
+                log.trace(e.message, e)
+                return
+            }
 
-        val videoUrl = getYoutubeUrl()
-            ?: getTTUrl(wait)
+            wait.until(elementToBeClickable(By.id("qtcontents")))
 
-        val existingVideo = configuration.videos.find {
-            (it.name.equals(name, ignoreCase = true) || it.url == videoUrl) && it.date == date
+            val videoUrl = getYoutubeUrl()
+                ?: getTTUrl(wait)
+
+            val existingVideo = configuration.videos.find {
+                (it.name.equals(name, ignoreCase = true) || it.url == videoUrl) && it.date == date
+            }
+            if (existingVideo == null) {
+                val video = TabletopTacticsVideo(0, name, date, videoUrl, imageUrl, configuration)
+                configuration.videos += video
+            } else {
+                existingVideo.name = name
+                existingVideo.url = videoUrl
+                existingVideo.thumbnail = imageUrl
+            }
+        } finally {
+            close()
+            switchTo().window(originalTab)
         }
-        if (existingVideo == null) {
-            val video = TabletopTacticsVideo(0, name, date, videoUrl, imageUrl, configuration)
-            configuration.videos += video
-        } else {
-            existingVideo.name = name
-            existingVideo.url = videoUrl
-            existingVideo.thumbnail = imageUrl
-        }
-
-        close()
-
-        switchTo().window(originalTab)
     }
 
     private fun WebDriver.getYoutubeUrl(): URI? {
