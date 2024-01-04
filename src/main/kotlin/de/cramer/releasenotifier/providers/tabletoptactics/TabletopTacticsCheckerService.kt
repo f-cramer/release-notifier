@@ -32,7 +32,7 @@ class TabletopTacticsCheckerService(
                 val sources = videos.map { VideoSource(it) }
 
                 val videoString = if (sources.size == 1) "video" else "videos"
-                val subject = "${sources.size} new $videoString avaiable from TabletopTactics"
+                val subject = "${sources.size} new $videoString available from TabletopTactics"
                 htmlMessageGenerator.generate(sources, subject, null)
             }
             .toList()
