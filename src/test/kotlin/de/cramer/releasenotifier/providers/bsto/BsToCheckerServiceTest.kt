@@ -82,9 +82,9 @@ class BsToCheckerServiceTest {
 
         @JvmStatic
         @Suppress("UnusedPrivateMember")
-        private fun generateTestInput(): List<List<BsToSeries>> = generateSequence {
+        private fun generateTestInput(): List<List<BsToSeries>> = List(10) {
             faker.collection(1..5) { generateSeries() }
-        }.take(10).toList()
+        }
 
         @JvmStatic
         private fun generateSeries(): BsToSeries {
