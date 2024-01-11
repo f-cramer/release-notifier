@@ -114,6 +114,7 @@ class TabletopTacticsConfigurationService(
 
             val videoUrl = getYoutubeUrl()
                 ?: getTTUrl(wait)
+                ?: error("could not find url for video named \"$name\"")
 
             val existingVideo = configuration.videos.find {
                 (it.name.equals(name, ignoreCase = true) || it.url == videoUrl) && it.date == date
@@ -145,11 +146,12 @@ class TabletopTacticsConfigurationService(
         return findElements(By.cssSelector("#qtcontents .qt-the-content > p"))
             .firstOrNull()
             ?.text
+            ?.takeUnless { it.isBlank() }
             ?.runCatching(URI::create)
             ?.getOrNull()
     }
 
-    private fun RemoteWebDriver.getTTUrl(wait: Wait<WebDriver>): URI {
+    private fun RemoteWebDriver.getTTUrl(wait: Wait<WebDriver>): URI? {
         val ttcdnId = "ttcdn"
         val videoTagName = "video"
 
@@ -162,7 +164,8 @@ class TabletopTacticsConfigurationService(
 
         val playerSelector = By.tagName("video")
         wait.until(elementToBeClickable(playerSelector))
-        return URI.create(findElement(playerSelector).findElement(By.tagName("source")).getAttribute("src"))
+        val source = findElement(playerSelector).findElement(By.tagName("source")).getAttribute("src")
+        return if (source.isBlank()) null else URI.create(source)
     }
 
     companion object {
