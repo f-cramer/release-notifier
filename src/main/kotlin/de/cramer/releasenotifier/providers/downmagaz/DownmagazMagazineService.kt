@@ -41,8 +41,9 @@ class DownmagazMagazineService(
     private fun DownmagazMagazine.addIssues(document: Document) {
         document.select(".fstory .stitle a").forEach {
             val name = it.text()
-            if (issues.none { i -> i.name == name }) {
-                issues += DownmagazIssue(name, URI(it.attr("abs:href")), this)
+            val url = URI(it.attr("abs:href"))
+            if (issues.none { i -> i.name == name || i.url == url }) {
+                issues += DownmagazIssue(name, url, this)
             }
         }
     }
