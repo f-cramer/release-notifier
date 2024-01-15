@@ -57,6 +57,7 @@ class JackettSearchService(
 
         val resultName = title.getResultName(namePrefix, nameSuffix, replacements) ?: return
         val links = sequenceOf(
+            element.select("comments").eachText(),
             element.select("guid").eachText(),
             element.select("link").eachText(),
             element.select("enclosure").eachAttr("url"),
