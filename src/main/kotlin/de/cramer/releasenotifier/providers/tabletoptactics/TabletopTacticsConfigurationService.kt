@@ -65,13 +65,17 @@ class TabletopTacticsConfigurationService(
                 driver.updateVideo(it, wait, configuration)
             }
         } catch (e: Exception) {
-            val now = LocalDateTime.now().format(FILE_DATE_FORMATTER)
-            val screenshot = driver.getFullPageScreenshotAs(OutputType.FILE)
-            screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
-            screenshot.delete()
-            val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
-            pageSourceFile.writeText(driver.pageSource)
-            throw e
+            if (e.message?.startsWith("Reached error page: about:neterror") == true) {
+                // ignore
+            } else {
+                val now = LocalDateTime.now().format(FILE_DATE_FORMATTER)
+                val screenshot = driver.getFullPageScreenshotAs(OutputType.FILE)
+                screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
+                screenshot.delete()
+                val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
+                pageSourceFile.writeText(driver.pageSource)
+                throw e
+            }
         } finally {
             driver.quit()
         }
