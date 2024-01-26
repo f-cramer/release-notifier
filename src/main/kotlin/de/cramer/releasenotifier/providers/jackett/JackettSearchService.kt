@@ -19,7 +19,7 @@ class JackettSearchService(
     fun update(search: JackettSearch) {
         val (document, statusCode) = try {
             jsoupService.getDocument(search.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
-        } catch (@Suppress("SwallowedException") e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
             return
         }
 
