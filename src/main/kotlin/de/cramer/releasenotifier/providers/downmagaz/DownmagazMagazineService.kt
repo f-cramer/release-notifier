@@ -6,6 +6,7 @@ import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Document
 import org.slf4j.Logger
 import org.springframework.stereotype.Service
+import java.net.SocketTimeoutException
 import java.net.URI
 
 @Service
@@ -14,7 +15,12 @@ class DownmagazMagazineService(
     private val log: Logger,
 ) {
     fun update(magazine: DownmagazMagazine) {
-        val (document, statusCode) = jsoupService.getDocument(magazine.url, JSOUP_CONFIGURATION_KEY, ignoreHttpErrors = true)
+        val (document, statusCode) = try {
+            jsoupService.getDocument(magazine.url, JSOUP_CONFIGURATION_KEY, ignoreHttpErrors = true)
+        } catch (_: SocketTimeoutException) {
+            return
+        }
+
         if (statusCode in IGNORED_STATUS_CODES) {
             return
         } else {
@@ -34,7 +40,13 @@ class DownmagazMagazineService(
 
         val documents = sequenceOf(document) + generateSequence(2) { it + 1 }.takeWhile { it <= pageCount }
             .map { magazine.url + "page/$it/" }
-            .map { jsoupService.getDocument(it, JSOUP_CONFIGURATION_KEY).document }
+            .mapNotNull {
+                try {
+                    jsoupService.getDocument(it, JSOUP_CONFIGURATION_KEY).document
+                } catch (_: SocketTimeoutException) {
+                    null
+                }
+            }
         documents.forEach { magazine.addIssues(it) }
     }
 
