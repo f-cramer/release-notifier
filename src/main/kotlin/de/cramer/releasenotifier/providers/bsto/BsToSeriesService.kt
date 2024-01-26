@@ -7,6 +7,7 @@ import de.cramer.releasenotifier.providers.bsto.entities.BsToSeries
 import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Service
+import java.net.SocketTimeoutException
 import java.net.URI
 import java.time.Duration
 import java.util.Locale
@@ -19,7 +20,11 @@ class BsToSeriesService(
         val languageString = SERIES_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[2] } ?: SEASON_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[1] } ?: return
         val language = Locale.forLanguageTag(languageString).toLanguageTag()
 
-        val (document, _) = jsoupService.getDocument(series.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(1))
+        val (document, _) = try {
+            jsoupService.getDocument(series.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(1))
+        } catch (_: SocketTimeoutException) {
+            return
+        }
 
         // check for bs.to errors to ignore
         document.selectFirst("body")?.ownText()
@@ -68,7 +73,12 @@ class BsToSeriesService(
     }
 
     private fun BsToSeason.addEpisodes() {
-        val (latestSeasonDocument, _) = jsoupService.getDocument(url, JSOUP_CONFIGURATION_KEY)
+        val (latestSeasonDocument, _) = try {
+            jsoupService.getDocument(url, JSOUP_CONFIGURATION_KEY)
+        } catch (_: SocketTimeoutException) {
+            return
+        }
+
         val selectedLanguage = latestSeasonDocument.selectFirst(".serie .series-language [selected]")?.attr("value") ?: return
         if (selectedLanguage == series.language) {
             val episodeNodes = latestSeasonDocument.select(".episodes tr:not(.disabled)").toList()
