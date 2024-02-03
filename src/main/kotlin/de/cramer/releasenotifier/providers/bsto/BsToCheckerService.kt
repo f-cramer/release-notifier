@@ -4,6 +4,7 @@ import de.cramer.releasenotifier.providers.bsto.entities.BsToEpisode
 import de.cramer.releasenotifier.providers.bsto.entities.BsToLink
 import de.cramer.releasenotifier.providers.bsto.entities.BsToSeries
 import de.cramer.releasenotifier.providers.bsto.specifications.BsToSeriesByEnabledSpecification
+import de.cramer.releasenotifier.providers.bsto.specifications.BsToSeriesByNamesSpecification
 import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
@@ -28,7 +29,9 @@ class BsToCheckerService(
             return emptyList()
         }
 
-        return newChildren.groupBy { it.season.series }.asSequence()
+        val newEpisodesBySeries = newChildren.groupBy { it.season.series }
+        val allSeries = seriesRepository.findAll(BsToSeriesByNamesSpecification(newEpisodesBySeries.keys.map { it.name }))
+        return newEpisodesBySeries.asSequence()
             .sortedWith(EPISODES_BY_SERIES_COMPARATOR)
             .map { (series, episodes) ->
                 val context = BsToContext(
@@ -37,7 +40,9 @@ class BsToCheckerService(
                 )
                 val sources = episodes.map { EpisodeSource(it, context) }
                 val episodeString = if (episodes.size == 1) "episode" else "episodes"
-                val subject = "${sources.size} new $episodeString available for series \"${series.name}\""
+                val seriesWithSameNameExists = allSeries.any { it.id != series.id && it.name == series.name }
+                val seriesName = "${series.name} ${if (seriesWithSameNameExists) "(${series.language.uppercase()})" else ""}".trim()
+                val subject = "${sources.size} new $episodeString available for series \"${seriesName}\""
                 htmlMessageGenerator.generate(sources, subject, null)
             }
             .toList()
