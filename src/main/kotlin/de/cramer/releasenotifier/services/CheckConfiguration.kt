@@ -55,7 +55,7 @@ class CheckConfiguration(
             }
         }
         return Message(
-            "Exception while running checker checker service of type $type",
+            "Exception while running checker service of type $type",
             message,
             true,
         )
