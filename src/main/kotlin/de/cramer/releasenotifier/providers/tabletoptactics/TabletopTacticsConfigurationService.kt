@@ -116,9 +116,14 @@ class TabletopTacticsConfigurationService(
 
             wait.until(elementToBeClickable(By.id("qtcontents")))
 
-            val videoUrl = getYoutubeUrl()
-                ?: getTTUrl(wait)
-                ?: error("could not find url for video named \"$name\"")
+            val videoUrl = try {
+                getYoutubeUrl()
+                    ?: getTTUrl(wait)
+                    ?: error("could not find url for video named \"$name\"")
+            } catch (e: TimeoutException) {
+                log.trace(e.message, e)
+                return
+            }
 
             val existingVideo = configuration.videos.find {
                 (it.name.equals(name, ignoreCase = true) || it.url == videoUrl) && it.date == date
@@ -166,9 +171,8 @@ class TabletopTacticsConfigurationService(
             switchTo().frame(element)
         }
 
-        val playerSelector = By.tagName("video")
-        wait.until(elementToBeClickable(playerSelector))
-        val source = findElement(playerSelector).findElement(By.tagName("source")).getAttribute("src")
+        val playerSelector = By.tagName(videoTagName)
+        val source = wait.until(elementToBeClickable(playerSelector)).findElement(By.tagName("source")).getAttribute("src")
         return if (source.isBlank()) null else URI.create(source)
     }
 
