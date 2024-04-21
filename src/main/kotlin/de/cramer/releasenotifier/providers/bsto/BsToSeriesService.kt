@@ -32,7 +32,7 @@ class BsToSeriesService(
             ?.let { return }
 
         val name = document.selectFirst(NAME_SELECTOR)
-            ?.textNodes()?.firstOrNull()?.text()?.trim() ?: error("could not find series name at ($NAME_SELECTOR)")
+            ?.textNodes()?.firstOrNull()?.text()?.trim() ?: error("could not find series name at ($NAME_SELECTOR) in ${series.url}")
         val seasonsElements = document.select(".serie .seasons li a")
             .eachAttr("abs:href")
 
