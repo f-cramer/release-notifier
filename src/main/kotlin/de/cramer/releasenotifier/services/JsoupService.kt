@@ -10,13 +10,14 @@ import org.slf4j.Logger
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.time.Duration
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class JsoupService(
     private val log: Logger,
     private val configuration: JsoupConfiguration,
 ) {
-    private val locks = mutableMapOf<String, TimedLock>()
+    private val locks = ConcurrentHashMap<String, TimedLock>()
 
     fun getDocument(
         uri: URI,
