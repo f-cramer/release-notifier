@@ -26,7 +26,7 @@ class JsoupService(
         ignoreHttpErrors: Boolean? = null,
         lockKey: String = uri.host,
     ): Response = locks.computeIfAbsent(lockKey) {
-        TimedLock(configuration.getProperties(configurationKey).delayBetweenRequests, log = log)
+        TimedLock(it, configuration.getProperties(configurationKey).delayBetweenRequests, log = log)
     }.withLock {
         val connection = Jsoup.connect(uri.toString())
         parser?.let { connection.parser(it) }
