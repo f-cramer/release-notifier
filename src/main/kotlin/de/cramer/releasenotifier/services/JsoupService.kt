@@ -27,8 +27,11 @@ class JsoupService(
         ignoreHttpErrors: Boolean? = null,
         lockKey: String = uri.host,
     ): Response = locks.computeIfAbsent(lockKey) {
-        TimedLock(it, configuration.getProperties(configurationKey).delayBetweenRequests, log = log)
+        TimedLock(it, configuration.getProperties(configurationKey).delayBetweenRequests, log = log).apply {
+            log.trace("creating lock for key {}", it)
+        }
     }.withLock {
+        log.trace("getting document from {}", uri)
         val connection = Jsoup.connect(uri.toString())
         parser?.let { connection.parser(it) }
         timeout?.let { connection.timeout(it.toMillis().toInt()) }
@@ -37,7 +40,9 @@ class JsoupService(
         val response = connection
             .method(Connection.Method.GET)
             .execute()
-        Response(response.parse(), response.statusCode())
+        val document = response.parse()
+        log.trace("done getting and parsing document from {}", uri)
+        Response(document, response.statusCode())
     }
 
     data class Response(
