@@ -11,6 +11,7 @@ import org.openqa.selenium.WebElement
 import org.openqa.selenium.WindowType
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.firefox.FirefoxOptions
+import org.openqa.selenium.remote.NoSuchDriverException
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable
@@ -28,18 +29,33 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField
 import java.util.Locale
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 @Service
 class TabletopTacticsConfigurationService(
     @Value("\${selenium.firefox.binary-path:#{null}}") private val firefoxBinaryPath: String?,
     private val log: Logger,
 ) {
+    private val lock = ReentrantLock()
+    private var successiveNoSuchDriverExceptions = 0
+
     fun update(configuration: TabletopTacticsConfiguration) {
         val options = FirefoxOptions().apply {
             firefoxBinaryPath?.let { setBinary(it) }
             addArguments("-headless")
         }
-        val driver = FirefoxDriver(options)
+        val driver = lock.withLock {
+            try {
+                FirefoxDriver(options).also {
+                    successiveNoSuchDriverExceptions = 0
+                }
+            } catch (e: NoSuchDriverException) {
+                successiveNoSuchDriverExceptions++
+                if (successiveNoSuchDriverExceptions >= 2) throw e else return
+            }
+        }
+
         try {
             val wait = WebDriverWait(driver, Duration.ofMinutes(1))
 
