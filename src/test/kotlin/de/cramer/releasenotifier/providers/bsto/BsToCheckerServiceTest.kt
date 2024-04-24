@@ -9,6 +9,7 @@ import assertk.assertions.isGreaterThanOrEqualTo
 import assertk.assertions.isTrue
 import assertk.assertions.prop
 import assertk.assertions.size
+import de.cramer.releasenotifier.NotifierSpringBootTest
 import de.cramer.releasenotifier.providers.bsto.entities.BsToEpisode
 import de.cramer.releasenotifier.providers.bsto.entities.BsToLink
 import de.cramer.releasenotifier.providers.bsto.entities.BsToSeason
@@ -24,11 +25,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import java.lang.reflect.Method
 
-@SpringBootTest
+@NotifierSpringBootTest
 class BsToCheckerServiceTest {
 
     private val createMessage: Method = BsToCheckerService::class.java.getDeclaredMethod("createMessages", List::class.java)
