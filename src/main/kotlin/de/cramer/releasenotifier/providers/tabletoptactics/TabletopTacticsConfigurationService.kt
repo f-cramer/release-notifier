@@ -73,7 +73,7 @@ class TabletopTacticsConfigurationService(
             wait.until(elementToBeClickable(By.name("avatar_submit")))
             driver.findElement(By.linkText("SHOWS")).click()
 
-            val videosSelector = By.cssSelector(".type-post.status-publish")
+            val videosSelector = By.cssSelector(".type-post.status-publish.post_format-post-format-video")
             wait.until(elementToBeClickable(videosSelector))
 
             val videoElements = driver.findElements(videosSelector).filterNotNull()
