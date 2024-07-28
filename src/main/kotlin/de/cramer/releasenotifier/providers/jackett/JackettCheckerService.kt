@@ -37,7 +37,7 @@ class JackettCheckerService(
                     }
                     .toList()
 
-                val releaseString = if (releases.size == 1) "release" else "releases"
+                val releaseString = if (sources.size == 1) "release" else "releases"
                 val subject = "${sources.size} new $releaseString available for search \"${search.name}\""
                 htmlMessageGenerator.generate(sources, subject, null)
             }
