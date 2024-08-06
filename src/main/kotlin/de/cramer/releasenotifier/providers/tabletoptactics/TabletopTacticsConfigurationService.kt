@@ -39,14 +39,15 @@ class TabletopTacticsConfigurationService(
 ) {
     private val lock = ReentrantLock()
     private var successiveNoSuchDriverExceptions = 0
+    private var successiveTimeouts = 0
 
     fun update(configuration: TabletopTacticsConfiguration) {
         val options = FirefoxOptions().apply {
             firefoxBinaryPath?.let { setBinary(it) }
             addArguments("-headless")
         }
-        val driver = lock.withLock {
-            try {
+        lock.withLock {
+            val driver = try {
                 FirefoxDriver(options).also {
                     successiveNoSuchDriverExceptions = 0
                 }
@@ -54,46 +55,59 @@ class TabletopTacticsConfigurationService(
                 successiveNoSuchDriverExceptions++
                 if (successiveNoSuchDriverExceptions >= 2) throw e else return
             }
-        }
 
-        try {
-            val wait = WebDriverWait(driver, Duration.ofMinutes(1))
+            try {
+                val wait = WebDriverWait(driver, Duration.ofMinutes(1))
 
-            driver.get("https://tabletoptactics.tv/log-in/")
-            @Suppress("MagicNumber")
-            wait.until(ExpectedConditions.numberOfElementsToBeMoreThan(By.cssSelector("form[name=login] input[type=hidden]"), 3))
+                driver.get("https://tabletoptactics.tv/log-in/")
+                @Suppress("MagicNumber")
+                wait.until(ExpectedConditions.numberOfElementsToBeMoreThan(By.cssSelector("form[name=login] input[type=hidden]"), 3))
 
-            driver.findElement(By.id("cn-accept-cookie")).click()
+                driver.findElement(By.id("cn-accept-cookie")).click()
 
-            driver.findElement(By.id("user_login")).sendKeys(configuration.username)
-            val passwordField = driver.findElement(By.id("user_pass"))
-            passwordField.sendKeys(configuration.password)
-            passwordField.submit()
+                driver.findElement(By.id("user_login")).sendKeys(configuration.username)
+                val passwordField = driver.findElement(By.id("user_pass"))
+                passwordField.sendKeys(configuration.password)
+                passwordField.submit()
 
-            wait.until(elementToBeClickable(By.name("avatar_submit")))
-            driver.findElement(By.linkText("SHOWS")).click()
+                wait.until(elementToBeClickable(By.name("avatar_submit")))
+                driver.findElement(By.linkText("SHOWS")).click()
 
-            val videosSelector = By.cssSelector(".type-post.status-publish.post_format-post-format-video")
-            wait.until(elementToBeClickable(videosSelector))
+                val videosSelector = By.cssSelector(".type-post.status-publish.post_format-post-format-video")
+                wait.until(elementToBeClickable(videosSelector))
 
-            val videoElements = driver.findElements(videosSelector).filterNotNull()
-            videoElements.forEach {
-                driver.updateVideo(it, wait, configuration)
+                val videoElements = driver.findElements(videosSelector).filterNotNull()
+                videoElements.forEach {
+                    driver.updateVideo(it, wait, configuration)
+                }
+
+                successiveTimeouts = 0
+            } catch (e: Exception) {
+                if (e.message?.startsWith("Reached error page: about:neterror") == true) {
+                    // ignore
+                } else {
+                    @Suppress("InstanceOfCheckForException")
+                    if (e is TimeoutException) {
+                        if (successiveTimeouts <= 1) {
+                            successiveTimeouts++
+                            log.trace(e.message, e)
+                            return
+                        }
+                    } else {
+                        successiveTimeouts = 0
+                    }
+
+                    val now = LocalDateTime.now().format(FILE_DATE_FORMATTER)
+                    val screenshot = driver.getFullPageScreenshotAs(OutputType.FILE)
+                    screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
+                    screenshot.delete()
+                    val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
+                    pageSourceFile.writeText(driver.pageSource)
+                    throw e
+                }
+            } finally {
+                driver.quit()
             }
-        } catch (e: Exception) {
-            if (e.message?.startsWith("Reached error page: about:neterror") == true) {
-                // ignore
-            } else {
-                val now = LocalDateTime.now().format(FILE_DATE_FORMATTER)
-                val screenshot = driver.getFullPageScreenshotAs(OutputType.FILE)
-                screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
-                screenshot.delete()
-                val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
-                pageSourceFile.writeText(driver.pageSource)
-                throw e
-            }
-        } finally {
-            driver.quit()
         }
     }
 
