@@ -12,7 +12,7 @@ import java.io.Serial
 class TabletopTacticsConfigurationsByEnabledSpecification(
     private val enabled: Boolean = true,
 ) : Specification<TabletopTacticsConfiguration> {
-    override fun toPredicate(root: Root<TabletopTacticsConfiguration>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder): Predicate {
+    override fun toPredicate(root: Root<TabletopTacticsConfiguration>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate {
         return criteriaBuilder.equal(root.get(TabletopTacticsConfiguration_.enabled), enabled)
     }
 

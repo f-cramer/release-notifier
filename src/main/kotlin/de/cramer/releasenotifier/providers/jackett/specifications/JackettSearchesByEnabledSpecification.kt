@@ -12,7 +12,7 @@ import java.io.Serial
 class JackettSearchesByEnabledSpecification(
     private val enabled: Boolean = true,
 ) : Specification<JackettSearch> {
-    override fun toPredicate(root: Root<JackettSearch>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder): Predicate {
+    override fun toPredicate(root: Root<JackettSearch>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate {
         return criteriaBuilder.equal(root.get(JackettSearch_.enabled), enabled)
     }
 
