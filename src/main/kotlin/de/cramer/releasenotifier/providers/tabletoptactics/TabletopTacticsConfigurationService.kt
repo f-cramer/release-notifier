@@ -184,10 +184,20 @@ class TabletopTacticsConfigurationService(
     private fun WebDriver.getYoutubeFallbackUrl(): URI? {
         return findElements(By.cssSelector("#qtcontents .qt-the-content > p"))
             .firstOrNull()
-            ?.text
-            ?.takeUnless { it.isBlank() }
-            ?.runCatching(URI::create)
-            ?.getOrNull()
+            ?.let { p ->
+                val url = p.text
+                    ?.takeUnless { it.isBlank() }
+                    ?.runCatching(URI::create)
+                    ?.getOrNull()
+                if (url != null) {
+                    return@let url
+                }
+
+                p.findElements(By.cssSelector("iframe.youtube-player")).firstOrNull()
+                    ?.getAttribute("src")
+                    ?.runCatching(URI::create)
+                    ?.getOrNull()
+            }
     }
 
     private fun RemoteWebDriver.getTTUrl(wait: Wait<WebDriver>): URI? {
