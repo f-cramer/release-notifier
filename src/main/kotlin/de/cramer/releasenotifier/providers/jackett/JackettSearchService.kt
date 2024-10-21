@@ -16,7 +16,24 @@ class JackettSearchService(
     private val jsoupService: JsoupService,
     private val log: Logger,
 ) {
+    private var latestException: Throwable? = null
+
     fun update(search: JackettSearch) {
+        try {
+            doUpdate(search)
+            latestException = null
+        } catch (e: Exception) {
+            latestException?.let {
+                if (it::class.java == e::class.java) {
+                    throw e
+                }
+            }
+
+            latestException = e
+        }
+    }
+
+    private fun doUpdate(search: JackettSearch) {
         val (document, statusCode) = try {
             jsoupService.getDocument(search.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
         } catch (_: SocketTimeoutException) {
