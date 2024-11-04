@@ -3,6 +3,7 @@ package de.cramer.releasenotifier.providers.downmagaz
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazIssue
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazMagazine
 import de.cramer.releasenotifier.services.JsoupService
+import org.jsoup.HttpStatusException
 import org.jsoup.nodes.Document
 import org.slf4j.Logger
 import org.springframework.stereotype.Service
@@ -45,6 +46,13 @@ class DownmagazMagazineService(
                     jsoupService.getDocument(it, JSOUP_CONFIGURATION_KEY).document
                 } catch (_: SocketTimeoutException) {
                     null
+                } catch (e: HttpStatusException) {
+                    @Suppress("MagicNumber")
+                    if (e.statusCode == 500) {
+                        null
+                    } else {
+                        throw e
+                    }
                 }
             }
         documents.forEach { magazine.addIssues(it) }
