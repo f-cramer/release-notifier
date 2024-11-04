@@ -7,6 +7,7 @@ import de.cramer.releasenotifier.providers.bsto.entities.BsToSeries
 import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Service
+import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.URI
 import java.time.Duration
@@ -24,6 +25,11 @@ class BsToSeriesService(
             jsoupService.getDocument(series.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(1))
         } catch (_: SocketTimeoutException) {
             return
+        } catch (e: SocketException) {
+            if (e.message == "Connection reset") {
+                return
+            }
+            throw e
         }
 
         // check for bs.to errors to ignore
@@ -77,6 +83,11 @@ class BsToSeriesService(
             jsoupService.getDocument(url, JSOUP_CONFIGURATION_KEY)
         } catch (_: SocketTimeoutException) {
             return
+        } catch (e: SocketException) {
+            if (e.message == "Connection reset") {
+                return
+            }
+            throw e
         }
 
         val selectedLanguage = latestSeasonDocument.selectFirst(".serie .series-language [selected]")?.attr("value") ?: return
