@@ -25,7 +25,7 @@ class DownmagazMagazineService(
         }
         val pageCount = pages[pages.size - 2].text().toInt()
 
-        val documents = sequenceOf(document) + generateSequence(2) { it + 1 }.takeWhile { it <= pageCount }
+        val documents = sequenceOf(document) + (2..pageCount).asSequence()
             .map { magazine.url + "page/$it/" }
             .mapNotNull { it.getDocument() }
         documents.forEach { magazine.addIssues(it) }
