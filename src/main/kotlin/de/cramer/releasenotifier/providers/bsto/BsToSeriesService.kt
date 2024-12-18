@@ -8,6 +8,7 @@ import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Service
+import java.io.IOException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.URI
@@ -123,6 +124,11 @@ class BsToSeriesService(
             return null
         } catch (e: SocketException) {
             if (e.message == "Connection reset") {
+                return null
+            }
+            throw e
+        } catch (e: IOException) {
+            if (e.message == "Underlying input stream returned zero bytes") {
                 return null
             }
             throw e
