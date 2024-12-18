@@ -5,6 +5,7 @@ import de.cramer.releasenotifier.providers.bsto.entities.BsToLink
 import de.cramer.releasenotifier.providers.bsto.entities.BsToSeason
 import de.cramer.releasenotifier.providers.bsto.entities.BsToSeries
 import de.cramer.releasenotifier.services.JsoupService
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Service
 import java.net.SocketException
@@ -21,16 +22,7 @@ class BsToSeriesService(
         val languageString = SERIES_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[2] } ?: SEASON_URL_REGEX.matchEntire(series.url.toString())?.groupValues?.let { it[1] } ?: return
         val language = Locale.forLanguageTag(languageString).toLanguageTag()
 
-        val (document, _) = try {
-            jsoupService.getDocument(series.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(1))
-        } catch (_: SocketTimeoutException) {
-            return
-        } catch (e: SocketException) {
-            if (e.message == "Connection reset") {
-                return
-            }
-            throw e
-        }
+        val document = series.url.getDocument() ?: return
 
         // check for bs.to errors to ignore
         document.selectFirst("body")?.ownText()
@@ -79,16 +71,7 @@ class BsToSeriesService(
     }
 
     private fun BsToSeason.addEpisodes() {
-        val (latestSeasonDocument, _) = try {
-            jsoupService.getDocument(url, JSOUP_CONFIGURATION_KEY)
-        } catch (_: SocketTimeoutException) {
-            return
-        } catch (e: SocketException) {
-            if (e.message == "Connection reset") {
-                return
-            }
-            throw e
-        }
+        val latestSeasonDocument = url.getDocument() ?: return
 
         val selectedLanguage = latestSeasonDocument.selectFirst(".serie .series-language [selected]")?.attr("value") ?: return
         if (selectedLanguage == series.language) {
@@ -130,6 +113,19 @@ class BsToSeriesService(
         } else {
             existingLink.hoster = hoster
             existingLink.url = url
+        }
+    }
+
+    private fun URI.getDocument(): Document? {
+        try {
+            return jsoupService.getDocument(this, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(1)).document
+        } catch (_: SocketTimeoutException) {
+            return null
+        } catch (e: SocketException) {
+            if (e.message == "Connection reset") {
+                return null
+            }
+            throw e
         }
     }
 
