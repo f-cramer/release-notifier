@@ -120,6 +120,12 @@ class TabletopTacticsConfigurationService(
             .joinToString(separator = "")
         val date = LocalDate.parse(dateText.trim(), DATE_FORMATTER)
         val name = element.findElement(By.cssSelector(".qt-title a")).text.trim()
+        println("update video $name ($date)")
+        if (configuration.videos.any { it.name.equals(name, ignoreCase = true) && it.date == date }) {
+            // we already imported this video, no need to process it again
+            return
+        }
+
         val background = try {
             // it can happen that videos do not contain a background right after being uploaded
             element.findElement(By.className("qt-header-bg"))
