@@ -3,10 +3,10 @@ package de.cramer.releasenotifier.providers.downmagaz
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazIssue
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazMagazine
 import de.cramer.releasenotifier.services.JsoupService
-import org.jsoup.HttpStatusException
 import org.jsoup.nodes.Document
 import org.slf4j.Logger
 import org.springframework.stereotype.Service
+import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.URI
 
@@ -16,21 +16,7 @@ class DownmagazMagazineService(
     private val log: Logger,
 ) {
     fun update(magazine: DownmagazMagazine) {
-        val (document, statusCode) = try {
-            jsoupService.getDocument(magazine.url, JSOUP_CONFIGURATION_KEY, ignoreHttpErrors = true)
-        } catch (_: SocketTimeoutException) {
-            return
-        }
-
-        if (statusCode in IGNORED_STATUS_CODES) {
-            return
-        } else {
-            val statusCodeClass = statusCode / 100
-            @Suppress("MagicNumber")
-            if (statusCodeClass == 4 || statusCodeClass == 5) {
-                error("received status code $statusCode when loading ${magazine.url}")
-            }
-        }
+        val document = magazine.url.getDocument() ?: return
         val pages = document.select(".catPages a")
 
         if (pages.isEmpty()) {
@@ -41,20 +27,7 @@ class DownmagazMagazineService(
 
         val documents = sequenceOf(document) + generateSequence(2) { it + 1 }.takeWhile { it <= pageCount }
             .map { magazine.url + "page/$it/" }
-            .mapNotNull {
-                try {
-                    jsoupService.getDocument(it, JSOUP_CONFIGURATION_KEY).document
-                } catch (_: SocketTimeoutException) {
-                    null
-                } catch (e: HttpStatusException) {
-                    @Suppress("MagicNumber")
-                    if (e.statusCode == 500) {
-                        null
-                    } else {
-                        throw e
-                    }
-                }
-            }
+            .mapNotNull { it.getDocument() }
         documents.forEach { magazine.addIssues(it) }
     }
 
@@ -66,6 +39,32 @@ class DownmagazMagazineService(
                 issues += DownmagazIssue(name, url, this)
             }
         }
+    }
+
+    private fun URI.getDocument(): Document? {
+        val (document, statusCode) = try {
+            jsoupService.getDocument(this, JSOUP_CONFIGURATION_KEY, ignoreHttpErrors = true)
+        } catch (_: SocketTimeoutException) {
+            return null
+        } catch (e: IOException) {
+            if (e.message == "Underlying input stream returned zero bytes") {
+                return null
+            } else {
+                throw e
+            }
+        }
+
+        if (statusCode in IGNORED_STATUS_CODES) {
+            return null
+        } else {
+            val statusCodeClass = statusCode / 100
+            @Suppress("MagicNumber")
+            if (statusCodeClass == 4 || statusCodeClass == 5) {
+                error("received status code $statusCode when loading $this")
+            }
+        }
+
+        return document
     }
 
     operator fun URI.plus(suffix: String): URI {
