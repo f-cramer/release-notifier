@@ -53,6 +53,7 @@ dependencies {
 kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xjsr305=strict")
+        allWarningsAsErrors = true
     }
 }
 

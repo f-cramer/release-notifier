@@ -102,7 +102,7 @@ class TabletopTacticsConfigurationService(
                     screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
                     screenshot.delete()
                     val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
-                    pageSourceFile.writeText(driver.pageSource)
+                    driver.pageSource?.let(pageSourceFile::writeText)
                     throw e
                 }
             } finally {
@@ -113,7 +113,7 @@ class TabletopTacticsConfigurationService(
 
     private fun FirefoxDriver.updateVideo(element: WebElement, wait: WebDriverWait, configuration: TabletopTacticsConfiguration) {
         val details = element.findElement(By.className("qt-details"))
-        val dateText = Jsoup.parse(details.getAttribute("outerHTML").trim())
+        val dateText = Jsoup.parse(details.getAttribute("outerHTML").orEmpty().trim())
             .select("body > ${details.tagName}").textNodes()
             .map { it.text().trim() }
             .filter { it.isNotEmpty() }
@@ -133,12 +133,12 @@ class TabletopTacticsConfigurationService(
             log.info(e.message, e)
             return
         }
-        val imageUrl = URI.create(background.getAttribute("data-bgimage"))
+        val imageUrl = URI.create(background.getAttribute("data-bgimage")!!)
 
         val originalTab = windowHandle
 
         // load video page url in new tab
-        val videoPageUrl = background.getAttribute("href")
+        val videoPageUrl = background.getAttribute("href")!!
         switchTo().newWindow(WindowType.TAB)
 
         try {
@@ -192,7 +192,7 @@ class TabletopTacticsConfigurationService(
             .firstOrNull()
             ?.let { p ->
                 val url = p.text
-                    ?.takeUnless { it.isBlank() }
+                    .takeUnless { it.isBlank() }
                     ?.runCatching(URI::create)
                     ?.getOrNull()
                 if (url != null) {
@@ -219,7 +219,7 @@ class TabletopTacticsConfigurationService(
 
         val playerSelector = By.tagName(videoTagName)
         val source = wait.until(elementToBeClickable(playerSelector)).findElement(By.tagName("source")).getAttribute("src")
-        return if (source.isBlank()) null else URI.create(source)
+        return if (source.isNullOrBlank()) null else URI.create(source)
     }
 
     companion object {
