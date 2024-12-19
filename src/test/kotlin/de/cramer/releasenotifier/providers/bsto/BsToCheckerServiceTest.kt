@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.lang.reflect.Method
 
 @NotifierSpringBootTest
@@ -33,10 +33,10 @@ class BsToCheckerServiceTest {
 
     private val createMessage: Method = BsToCheckerService::class.java.getDeclaredMethod("createMessages", List::class.java)
 
-    @MockBean
+    @MockitoBean
     private lateinit var repository: BsToSeriesRepository
 
-    @MockBean
+    @MockitoBean
     private lateinit var seriesService: BsToSeriesService
 
     @Autowired

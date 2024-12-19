@@ -1,11 +1,13 @@
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
-    id("org.springframework.boot") version "3.3.5"
+    id("org.springframework.boot") version "3.4.0"
     id("io.spring.dependency-management") version "1.1.7"
-    kotlin("jvm") version "1.9.25"
-    kotlin("kapt") version "1.9.25"
-    kotlin("plugin.spring") version "1.9.25"
+
+    kotlin("jvm") version "2.1.0"
+    kotlin("kapt") version "2.1.0"
+    kotlin("plugin.spring") version "2.1.0"
+
     kotlin("plugin.jpa") version "2.1.0"
 
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
@@ -44,7 +46,7 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.willowtreeapps.assertk:assertk:0.28.1")
-    testImplementation("net.datafaker:datafaker:2.4.1")
+    testImplementation("net.datafaker:datafaker:2.4.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
     testRuntimeOnly("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -52,7 +54,8 @@ dependencies {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xjsr305=strict")
+        freeCompilerArgs.addAll(listOf("-Xjsr305=strict", "-Xsuppress-version-warnings"))
+        allWarningsAsErrors = true
     }
 }
 
