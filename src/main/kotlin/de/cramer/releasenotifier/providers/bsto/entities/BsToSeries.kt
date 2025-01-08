@@ -1,7 +1,10 @@
 package de.cramer.releasenotifier.providers.bsto.entities
 
+import de.cramer.releasenotifier.entities.Enabler
+import de.cramer.releasenotifier.entities.ZBooleanEnabler
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -27,13 +30,13 @@ class BsToSeries(
     @Column(name = "url")
     var url: URI,
 
-    @Column(name = "enabled")
-    var enabled: Boolean,
+    @Embedded
+    var enabler: Enabler,
 
     @OneToMany(mappedBy = "series", cascade = [CascadeType.ALL])
     val seasons: MutableList<BsToSeason>,
 ) {
-    constructor(name: String, language: String, url: URI) : this(0, name, language, url, true, mutableListOf())
+    constructor(name: String, language: String, url: URI) : this(0, name, language, url, ZBooleanEnabler.TRUE, mutableListOf())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

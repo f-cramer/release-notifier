@@ -1,5 +1,7 @@
 package de.cramer.releasenotifier.providers.downmagaz.entities
 
+import de.cramer.releasenotifier.entities.Enabler
+import de.cramer.releasenotifier.entities.ZBooleanEnabler
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -24,12 +26,12 @@ class DownmagazMagazine(
     @Column(name = "url")
     var url: URI,
 
-    var enabled: Boolean,
+    var enabler: Enabler,
 
     @OneToMany(mappedBy = "magazine", cascade = [CascadeType.ALL])
     val issues: MutableList<DownmagazIssue>,
 ) {
-    constructor(name: String, url: URI) : this(0, name, url, true, mutableListOf())
+    constructor(name: String, url: URI) : this(0, name, url, ZBooleanEnabler.TRUE, mutableListOf())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

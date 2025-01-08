@@ -1,5 +1,7 @@
 package de.cramer.releasenotifier.providers.jackett.entities
 
+import de.cramer.releasenotifier.entities.Enabler
+import de.cramer.releasenotifier.entities.ZBooleanEnabler
 import jakarta.persistence.CascadeType
 import jakarta.persistence.CollectionTable
 import jakarta.persistence.Column
@@ -37,7 +39,7 @@ class JackettSearch(
     @Column(name = "ignore_pattern")
     var ignorePattern: String?,
 
-    var enabled: Boolean,
+    var enabler: Enabler,
 
     @ElementCollection
     @CollectionTable(name = "jackett_searches_replacements", joinColumns = [JoinColumn(name = "search_id")])
@@ -48,7 +50,7 @@ class JackettSearch(
     @OneToMany(mappedBy = "search", cascade = [CascadeType.ALL])
     var results: MutableList<JackettSearchResult>,
 ) {
-    constructor(name: String, url: URI) : this(0, name, url, null, null, null, true, mutableMapOf(), mutableListOf())
+    constructor(name: String, url: URI) : this(0, name, url, null, null, null, ZBooleanEnabler.TRUE, mutableMapOf(), mutableListOf())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

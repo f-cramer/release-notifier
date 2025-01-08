@@ -1,5 +1,6 @@
 package de.cramer.releasenotifier.providers.jackett.specifications
 
+import de.cramer.releasenotifier.entities.Enabler
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch_
 import jakarta.persistence.criteria.CriteriaBuilder
@@ -13,7 +14,7 @@ class JackettSearchesByEnabledSpecification(
     private val enabled: Boolean = true,
 ) : Specification<JackettSearch> {
     override fun toPredicate(root: Root<JackettSearch>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate {
-        return criteriaBuilder.equal(root.get(JackettSearch_.enabled), enabled)
+        return Enabler.getPredicate(enabled, root.get(JackettSearch_.enabler), criteriaBuilder)
     }
 
     companion object {

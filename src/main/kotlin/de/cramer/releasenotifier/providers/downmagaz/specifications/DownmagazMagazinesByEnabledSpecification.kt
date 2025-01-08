@@ -1,5 +1,6 @@
 package de.cramer.releasenotifier.providers.downmagaz.specifications
 
+import de.cramer.releasenotifier.entities.Enabler
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazMagazine
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazMagazine_
 import jakarta.persistence.criteria.CriteriaBuilder
@@ -13,7 +14,7 @@ class DownmagazMagazinesByEnabledSpecification(
     private val enabled: Boolean = true,
 ) : Specification<DownmagazMagazine> {
     override fun toPredicate(root: Root<DownmagazMagazine>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate {
-        return criteriaBuilder.equal(root.get(DownmagazMagazine_.enabled), enabled)
+        return Enabler.getPredicate(enabled, root.get(DownmagazMagazine_.enabler), criteriaBuilder)
     }
 
     companion object {

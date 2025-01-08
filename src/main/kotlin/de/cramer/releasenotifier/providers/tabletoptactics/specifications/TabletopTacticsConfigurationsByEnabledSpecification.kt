@@ -1,5 +1,6 @@
 package de.cramer.releasenotifier.providers.tabletoptactics.specifications
 
+import de.cramer.releasenotifier.entities.Enabler
 import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTacticsConfiguration
 import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTacticsConfiguration_
 import jakarta.persistence.criteria.CriteriaBuilder
@@ -13,7 +14,7 @@ class TabletopTacticsConfigurationsByEnabledSpecification(
     private val enabled: Boolean = true,
 ) : Specification<TabletopTacticsConfiguration> {
     override fun toPredicate(root: Root<TabletopTacticsConfiguration>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate {
-        return criteriaBuilder.equal(root.get(TabletopTacticsConfiguration_.enabled), enabled)
+        return Enabler.getPredicate(enabled, root.get(TabletopTacticsConfiguration_.enabler), criteriaBuilder)
     }
 
     companion object {

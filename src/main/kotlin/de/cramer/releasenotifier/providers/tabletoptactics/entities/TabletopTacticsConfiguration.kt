@@ -1,5 +1,6 @@
 package de.cramer.releasenotifier.providers.tabletoptactics.entities
 
+import de.cramer.releasenotifier.entities.Enabler
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -23,7 +24,7 @@ class TabletopTacticsConfiguration(
     @Column(name = "password")
     var password: String,
 
-    var enabled: Boolean,
+    var enabler: Enabler,
 
     @OneToMany(mappedBy = "configuration", cascade = [CascadeType.ALL])
     var videos: MutableList<TabletopTacticsVideo>,
