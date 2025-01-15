@@ -26,19 +26,22 @@ class CheckConfiguration(
 
     @Scheduled(cron = "\${check.schedule:-}")
     fun check() {
-        checkerServices
-            .map {
-                executor.submit(
-                    Callable {
-                        try {
-                            it.check()
-                        } catch (t: Throwable) {
-                            log.error(t.message, t)
-                            listOf(t.createMessage(it))
-                        }
-                    },
-                )
-            }.asSequence()
+        checkerServices.map {
+            executor.submit(
+                Callable {
+                    val type = AopProxyUtils.ultimateTargetClass(it).simpleName
+                    log.trace("[{}] starting check", type)
+                    try {
+                        it.check()
+                    } catch (t: Throwable) {
+                        log.error(t.message, t)
+                        listOf(t.createMessage(it))
+                    }.apply {
+                        log.trace("[{}] finished check", type)
+                    }
+                },
+            )
+        }.asSequence()
             .flatMap { it.get() }
             .forEach { notificationService.notify(it) }
     }
