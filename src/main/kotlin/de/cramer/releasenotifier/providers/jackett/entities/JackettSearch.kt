@@ -2,10 +2,12 @@ package de.cramer.releasenotifier.providers.jackett.entities
 
 import de.cramer.releasenotifier.entities.Enabler
 import de.cramer.releasenotifier.entities.ZBooleanEnabler
+import de.cramer.releasenotifier.providers.tvmaze.entities.TvMazeIntegration
 import jakarta.persistence.CascadeType
 import jakarta.persistence.CollectionTable
 import jakarta.persistence.Column
 import jakarta.persistence.ElementCollection
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -41,6 +43,12 @@ class JackettSearch(
 
     var enabler: Enabler,
 
+    @Embedded
+    var tvMazeIntegration: TvMazeIntegration?,
+
+    @OneToMany(mappedBy = "search", cascade = [CascadeType.ALL])
+    var subSearches: MutableList<JackettSubSearch>,
+
     @ElementCollection
     @CollectionTable(name = "jackett_searches_replacements", joinColumns = [JoinColumn(name = "search_id")])
     @MapKeyColumn(name = "pattern")
@@ -50,7 +58,7 @@ class JackettSearch(
     @OneToMany(mappedBy = "search", cascade = [CascadeType.ALL])
     var results: MutableList<JackettSearchResult>,
 ) {
-    constructor(name: String, url: URI) : this(0, name, url, null, null, null, ZBooleanEnabler.TRUE, mutableMapOf(), mutableListOf())
+    constructor(name: String, url: URI) : this(0, name, url, null, null, null, ZBooleanEnabler.TRUE, null, mutableListOf(), mutableMapOf(), mutableListOf())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

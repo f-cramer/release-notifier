@@ -1,19 +1,29 @@
 package de.cramer.releasenotifier.providers.jackett
 
+import de.cramer.releasenotifier.entities.ZDateBetweenEnabler
 import de.cramer.releasenotifier.providers.jackett.entities.JackettRelease
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearchResult
+import de.cramer.releasenotifier.providers.jackett.entities.JackettSubSearch
+import de.cramer.releasenotifier.providers.tvmaze.TvMazeService
 import de.cramer.releasenotifier.services.JsoupService
 import org.jsoup.nodes.Element
 import org.slf4j.Logger
 import org.springframework.stereotype.Service
+import org.springframework.web.util.UriComponentsBuilder
+import org.springframework.web.util.UriUtils
 import java.net.SocketTimeoutException
 import java.net.URI
+import java.nio.charset.StandardCharsets
 import java.time.Duration
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Locale
 
 @Service
 class JackettSearchService(
     private val jsoupService: JsoupService,
+    private val tvMazeService: TvMazeService,
     private val log: Logger,
 ) {
     private var latestException: Throwable? = null
@@ -34,8 +44,39 @@ class JackettSearchService(
     }
 
     private fun doUpdate(search: JackettSearch) {
+        val tvMazeIntegration = search.tvMazeIntegration
+        if (tvMazeIntegration != null) {
+            search.subSearches += tvMazeService.getNewEpisodes(tvMazeIntegration).mapNotNull {
+                val show = UriComponentsBuilder.fromUri(search.url).build(true).queryParams.getFirst("q")?.let { q -> UriUtils.decode(q, StandardCharsets.UTF_8) } ?: it.show
+                val request = String.format(Locale.ROOT, "%s S%02dE%02d", show, it.season, it.episode)
+                val uri = UriComponentsBuilder.fromUri(search.url).replaceQueryParam("q", UriUtils.encodeQueryParam(request, StandardCharsets.UTF_8)).build(true).toUri()
+                val airDate = it.airstamp.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate()
+                val enablerEnd = maxOf(airDate.plusDays(2), LocalDate.now())
+                val enabler = ZDateBetweenEnabler(airDate, enablerEnd)
+
+                val existingSubSearch = search.subSearches.find { ss -> ss.season == it.season && ss.episode == it.episode }
+                if (existingSubSearch != null) {
+                    existingSubSearch.url = uri
+                    existingSubSearch.enabler = enabler
+                    null
+                } else {
+                    JackettSubSearch(it.season, it.episode, uri, enabler, search)
+                }
+            }
+        }
+
+        if (search.subSearches.isEmpty()) {
+            doUpdate(search, search.url)
+        } else {
+            search.subSearches.asSequence()
+                .filter { it.enabler.enabled }
+                .forEach { subSearch -> doUpdate(subSearch.search, subSearch.url) }
+        }
+    }
+
+    private fun doUpdate(search: JackettSearch, uri: URI) {
         val (document, statusCode) = try {
-            jsoupService.getDocument(search.url, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
+            jsoupService.getDocument(uri, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
         } catch (_: SocketTimeoutException) {
             return
         }
