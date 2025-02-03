@@ -76,6 +76,6 @@ class DownmagazMagazineService(
 
     companion object {
         private const val JSOUP_CONFIGURATION_KEY = "downmagaz"
-        private val IGNORED_STATUS_CODES = setOf(521)
+        private val IGNORED_STATUS_CODES = setOf(500, 521)
     }
 }
