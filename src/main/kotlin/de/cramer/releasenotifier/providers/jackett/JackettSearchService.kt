@@ -26,20 +26,20 @@ class JackettSearchService(
     private val tvMazeService: TvMazeService,
     private val log: Logger,
 ) {
-    private var latestException: Throwable? = null
+    private var latestExceptions: MutableMap<Long, Throwable> = mutableMapOf()
 
     fun update(search: JackettSearch) {
         try {
             doUpdate(search)
-            latestException = null
+            latestExceptions -= search.id
         } catch (e: Exception) {
-            latestException?.let {
+            latestExceptions[search.id]?.let {
                 if (it::class.java == e::class.java) {
                     throw e
                 }
             }
 
-            latestException = e
+            latestExceptions[search.id] = e
         }
     }
 
