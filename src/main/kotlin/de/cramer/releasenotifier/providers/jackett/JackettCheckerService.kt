@@ -4,8 +4,8 @@ import de.cramer.releasenotifier.providers.jackett.entities.JackettRelease
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearchResult
 import de.cramer.releasenotifier.providers.jackett.specifications.JackettSearchesByEnabledSpecification
-import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
+import de.cramer.releasenotifier.services.SimpleAbstractCheckerSerivce
 import de.cramer.releasenotifier.utils.Message
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -15,7 +15,7 @@ class JackettCheckerService(
     private val searchRepository: JackettSearchRepository,
     private val searchService: JackettSearchService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
-) : AbstractCheckerSerivce<JackettSearch, JackettRelease>() {
+) : SimpleAbstractCheckerSerivce<JackettSearch, JackettRelease>() {
     override fun findAll(): List<JackettSearch> = searchRepository.findAll(JackettSearchesByEnabledSpecification())
 
     override fun getChildren(t: JackettSearch) = t.results.flatMap { it.releases }
