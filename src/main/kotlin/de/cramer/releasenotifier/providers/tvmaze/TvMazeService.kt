@@ -31,7 +31,7 @@ class TvMazeService(
         val lastCheckedDate = integration.lastCheckedDate
 
         val episodes = run {
-            var episodes = getEpisodes(show.id)
+            var episodes = getEpisodes(show.id).filter { it.airstamp != null }
             if (lastCheckedDate != null) {
                 episodes = episodes.filter { it.airstamp!!.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate() >= lastCheckedDate }
             }
@@ -43,7 +43,7 @@ class TvMazeService(
         return episodes.asSequence()
             .sortedWith(compareBy<TvMazeEpisode> { it.season }.thenBy { it.number })
             .distinct()
-            .filter { it.airstamp != null && it.airstamp.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate() <= today }
+            .filter { it.airstamp!!.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate() <= today }
             .map { TvMazeNewEpisode(show.name, it.name, it.season, it.number, it.airstamp!!) }
             .toList()
     }
