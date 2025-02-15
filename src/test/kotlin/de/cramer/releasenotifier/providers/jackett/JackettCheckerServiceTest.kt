@@ -38,6 +38,9 @@ class JackettCheckerServiceTest {
     @MockitoBean
     private lateinit var seriesService: JackettSearchService
 
+    @MockitoBean
+    private lateinit var releaseRepository: JackettReleaseRepository
+
     @Autowired
     private lateinit var htmlMessageGenerator: HtmlMessageGenerator
 
@@ -45,7 +48,7 @@ class JackettCheckerServiceTest {
 
     @BeforeEach
     fun setup() {
-        checkerService = JackettCheckerService(repository, seriesService, htmlMessageGenerator)
+        checkerService = JackettCheckerService(repository, seriesService, releaseRepository, htmlMessageGenerator)
     }
 
     @ParameterizedTest

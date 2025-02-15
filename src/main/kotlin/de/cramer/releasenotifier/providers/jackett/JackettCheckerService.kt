@@ -3,22 +3,25 @@ package de.cramer.releasenotifier.providers.jackett
 import de.cramer.releasenotifier.providers.jackett.entities.JackettRelease
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearchResult
+import de.cramer.releasenotifier.providers.jackett.specifications.JackettReleasesByCreationTimestampSpecification
 import de.cramer.releasenotifier.providers.jackett.specifications.JackettSearchesByEnabledSpecification
+import de.cramer.releasenotifier.services.AbstractCheckerSerivce
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
-import de.cramer.releasenotifier.services.SimpleAbstractCheckerSerivce
 import de.cramer.releasenotifier.utils.Message
 import org.springframework.stereotype.Service
 import java.net.URI
+import java.time.LocalDateTime
 
 @Service
 class JackettCheckerService(
     private val searchRepository: JackettSearchRepository,
     private val searchService: JackettSearchService,
+    private val releaseRepository: JackettReleaseRepository,
     private val htmlMessageGenerator: HtmlMessageGenerator,
-) : SimpleAbstractCheckerSerivce<JackettSearch, JackettRelease>() {
+) : AbstractCheckerSerivce<JackettSearch, JackettRelease>() {
     override fun findAll(): List<JackettSearch> = searchRepository.findAll(JackettSearchesByEnabledSpecification())
 
-    override fun getChildren(t: JackettSearch) = t.results.flatMap { it.releases }
+    override fun initializeState(elements: List<JackettSearch>): State<JackettSearch, JackettRelease> = JackettState()
 
     override fun update(t: JackettSearch) = searchService.update(t)
 
@@ -42,6 +45,13 @@ class JackettCheckerService(
                 htmlMessageGenerator.generate(sources, subject, null)
             }
             .toList()
+    }
+
+    private inner class JackettState : State<JackettSearch, JackettRelease> {
+        private val created: LocalDateTime = LocalDateTime.now()
+
+        override fun getNewChildren(elements: List<JackettSearch>): List<JackettRelease> =
+            releaseRepository.findAll(JackettReleasesByCreationTimestampSpecification(created))
     }
 
     private data class ResultSource(val result: JackettSearchResult, val releases: List<ReleaseSource>) : HtmlMessageGenerator.Source<JackettContext> {

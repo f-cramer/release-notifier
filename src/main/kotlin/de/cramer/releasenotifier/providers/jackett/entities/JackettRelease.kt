@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.net.URI
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "jackett_releases")
@@ -31,6 +32,9 @@ class JackettRelease(
     @ManyToOne
     @JoinColumn(name = "result_id")
     var result: JackettSearchResult,
+
+    @Column(name = "creation_timestamp")
+    var creationTimestamp: LocalDateTime = LocalDateTime.now(),
 ) {
     constructor(title: String, result: JackettSearchResult) : this(0, title, mutableSetOf(), result)
 
