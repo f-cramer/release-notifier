@@ -4,7 +4,7 @@ import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTact
 import de.cramer.releasenotifier.providers.tabletoptactics.entities.TabletopTacticsVideo
 import de.cramer.releasenotifier.providers.tabletoptactics.specifications.TabletopTacticsConfigurationsByEnabledSpecification
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
-import de.cramer.releasenotifier.services.SimpleAbstractCheckerSerivce
+import de.cramer.releasenotifier.services.SimpleAbstractCheckerService
 import de.cramer.releasenotifier.utils.Message
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -14,7 +14,7 @@ class TabletopTacticsCheckerService(
     private val configurationRepository: TabletopTacticsConfigurationRepository,
     private val configurationService: TabletopTacticsConfigurationService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
-) : SimpleAbstractCheckerSerivce<TabletopTacticsConfiguration, TabletopTacticsVideo>() {
+) : SimpleAbstractCheckerService<TabletopTacticsConfiguration, TabletopTacticsVideo>() {
     override fun findAll(): List<TabletopTacticsConfiguration> = configurationRepository.findAll(TabletopTacticsConfigurationsByEnabledSpecification())
 
     override fun getChildren(t: TabletopTacticsConfiguration) = t.videos

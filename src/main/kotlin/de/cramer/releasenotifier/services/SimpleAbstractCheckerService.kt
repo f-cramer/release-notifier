@@ -1,6 +1,6 @@
 package de.cramer.releasenotifier.services
 
-abstract class SimpleAbstractCheckerSerivce<T, U> : AbstractCheckerSerivce<T, U>() {
+abstract class SimpleAbstractCheckerService<T, U> : AbstractCheckerService<T, U>() {
     override fun initializeState(elements: List<T>): State<T, U> = SimpleState(elements)
 
     protected abstract fun getChildren(t: T): List<U>

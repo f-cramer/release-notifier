@@ -7,7 +7,7 @@ interface CheckerService {
     fun check(): List<Message>
 }
 
-abstract class AbstractCheckerSerivce<T, U> : CheckerService {
+abstract class AbstractCheckerService<T, U> : CheckerService {
     @Transactional
     override fun check(): List<Message> {
         val elements = findAll()

@@ -4,7 +4,7 @@ import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazIssue
 import de.cramer.releasenotifier.providers.downmagaz.entities.DownmagazMagazine
 import de.cramer.releasenotifier.providers.downmagaz.specifications.DownmagazMagazinesByEnabledSpecification
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
-import de.cramer.releasenotifier.services.SimpleAbstractCheckerSerivce
+import de.cramer.releasenotifier.services.SimpleAbstractCheckerService
 import de.cramer.releasenotifier.utils.Message
 import org.springframework.stereotype.Service
 
@@ -13,7 +13,7 @@ class DownmagazCheckerService(
     private val magazineRepository: DownmagazMagazineRepository,
     private val magazineService: DownmagazMagazineService,
     private val htmlMessageGenerator: HtmlMessageGenerator,
-) : SimpleAbstractCheckerSerivce<DownmagazMagazine, DownmagazIssue>() {
+) : SimpleAbstractCheckerService<DownmagazMagazine, DownmagazIssue>() {
     override fun findAll(): List<DownmagazMagazine> = magazineRepository.findAll(DownmagazMagazinesByEnabledSpecification())
 
     override fun getChildren(t: DownmagazMagazine) = t.issues

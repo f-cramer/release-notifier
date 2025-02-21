@@ -5,7 +5,7 @@ import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearchResult
 import de.cramer.releasenotifier.providers.jackett.specifications.JackettReleasesByCreationTimestampSpecification
 import de.cramer.releasenotifier.providers.jackett.specifications.JackettSearchesByEnabledSpecification
-import de.cramer.releasenotifier.services.AbstractCheckerSerivce
+import de.cramer.releasenotifier.services.AbstractCheckerService
 import de.cramer.releasenotifier.services.HtmlMessageGenerator
 import de.cramer.releasenotifier.utils.Message
 import org.springframework.stereotype.Service
@@ -18,7 +18,7 @@ class JackettCheckerService(
     private val searchService: JackettSearchService,
     private val releaseRepository: JackettReleaseRepository,
     private val htmlMessageGenerator: HtmlMessageGenerator,
-) : AbstractCheckerSerivce<JackettSearch, JackettRelease>() {
+) : AbstractCheckerService<JackettSearch, JackettRelease>() {
     override fun findAll(): List<JackettSearch> = searchRepository.findAll(JackettSearchesByEnabledSpecification())
 
     override fun initializeState(elements: List<JackettSearch>): State<JackettSearch, JackettRelease> = JackettState()
