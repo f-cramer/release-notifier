@@ -9,7 +9,7 @@ plugins {
     kotlin("plugin.jpa") version "2.1.10"
 
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
-    id("io.gitlab.arturbosch.detekt") version "1.23.7"
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
 group = "com.example"
@@ -88,7 +88,7 @@ detekt {
 dependencyManagement {
     configurations.getByName("detekt") {
         dependencies {
-            dependencySet("org.jetbrains.kotlin:2.0.10") {
+            dependencySet("org.jetbrains.kotlin:2.0.21") {
                 entry("kotlin-compiler-embeddable")
             }
         }
