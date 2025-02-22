@@ -32,7 +32,8 @@ class CheckConfiguration(
                     val type = AopProxyUtils.ultimateTargetClass(it).simpleName
                     log.trace("[{}] starting check", type)
                     try {
-                        it.check()
+                        val result = it.check()
+                        result.messages + result.exceptions.map { t -> t.createMessage(it) }
                     } catch (t: Throwable) {
                         log.error(t.message, t)
                         listOf(t.createMessage(it))

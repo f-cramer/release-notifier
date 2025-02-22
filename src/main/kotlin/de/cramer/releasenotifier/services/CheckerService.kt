@@ -4,19 +4,24 @@ import de.cramer.releasenotifier.utils.Message
 import org.springframework.transaction.annotation.Transactional
 
 interface CheckerService {
-    fun check(): List<Message>
+    fun check(): CheckResult
 }
+
+data class CheckResult(
+    val messages: List<Message>,
+    val exceptions: List<Throwable>,
+)
 
 abstract class AbstractCheckerService<T, U> : CheckerService {
     @Transactional
-    override fun check(): List<Message> {
+    override fun check(): CheckResult {
         val elements = findAll()
         val state = initializeState(elements)
 
-        elements.forEach { update(it) }
+        val exceptions = elements.mapNotNull { runCatching { update(it) }.exceptionOrNull() }
 
         val newChildren = state.getNewChildren(elements)
-        return createMessages(newChildren)
+        return CheckResult(createMessages(newChildren), exceptions)
     }
 
     protected abstract fun initializeState(elements: List<T>): State<T, U>
