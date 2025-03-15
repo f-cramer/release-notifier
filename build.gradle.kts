@@ -69,7 +69,7 @@ tasks.withType<Jar> {
 }
 
 ktlint {
-    version.set("1.0.0")
+    version.set("1.2.1")
     additionalEditorconfig.set(
         mapOf(
             "ktlint_code_style" to "intellij_idea",
