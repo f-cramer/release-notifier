@@ -27,7 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.lang.reflect.Method
 
 @NotifierSpringBootTest
-class DownmagazCheckerServiceTest {
+class PdfMagazinCheckerServiceTest {
 
     private val createMessage: Method = DownmagazCheckerService::class.java.getDeclaredMethod("createMessages", List::class.java)
 
