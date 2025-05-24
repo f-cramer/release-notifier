@@ -210,7 +210,7 @@ class TabletopTacticsConfigurationService(
         val videoTagName = "video"
 
         val anySelector = By.cssSelector("#$ttcdnId, $videoTagName")
-        val element = wait.until { findElements(anySelector).first() }
+        val element = wait.until { findElements(anySelector).firstOrNull() } ?: return null
 
         if (element.getAttribute("id") == ttcdnId) {
             switchTo().frame(element)
