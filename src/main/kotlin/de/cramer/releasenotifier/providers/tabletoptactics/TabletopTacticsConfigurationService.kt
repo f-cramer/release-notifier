@@ -113,7 +113,7 @@ class TabletopTacticsConfigurationService(
 
     private fun FirefoxDriver.updateVideo(element: WebElement, wait: WebDriverWait, configuration: TabletopTacticsConfiguration) {
         val details = element.findElement(By.className("qt-details"))
-        val dateText = Jsoup.parse(details.getAttribute("outerHTML").orEmpty().trim())
+        val dateText = Jsoup.parse(details.getDomProperty("outerHTML").orEmpty().trim())
             .select("body > ${details.tagName}").textNodes()
             .map { it.text().trim() }
             .filter { it.isNotEmpty() }
@@ -132,12 +132,12 @@ class TabletopTacticsConfigurationService(
             log.info(e.message, e)
             return
         }
-        val imageUrl = URI.create(background.getAttribute("data-bgimage")!!)
+        val imageUrl = URI.create(background.getDomAttribute("data-bgimage")!!)
 
         val originalTab = windowHandle
 
         // load video page url in new tab
-        val videoPageUrl = background.getAttribute("href")!!
+        val videoPageUrl = background.getDomAttribute("href")!!
         switchTo().newWindow(WindowType.TAB)
 
         try {
@@ -180,7 +180,7 @@ class TabletopTacticsConfigurationService(
     private fun WebDriver.getYoutubeUrl(): URI? {
         val uri = findElements(By.className("perfmatters-lazy-youtube"))
             .firstOrNull()
-            ?.getAttribute("data-src")
+            ?.getDomAttribute("data-src")
             ?.runCatching(URI::create)
             ?.getOrNull()
         return uri ?: getYoutubeFallbackUrl()
@@ -199,7 +199,7 @@ class TabletopTacticsConfigurationService(
                 }
 
                 p.findElements(By.cssSelector("iframe.youtube-player")).firstOrNull()
-                    ?.getAttribute("src")
+                    ?.getDomAttribute("src")
                     ?.runCatching(URI::create)
                     ?.getOrNull()
             }
@@ -212,12 +212,12 @@ class TabletopTacticsConfigurationService(
         val anySelector = By.cssSelector("#$ttcdnId, $videoTagName")
         val element = wait.until { findElements(anySelector).firstOrNull() } ?: return null
 
-        if (element.getAttribute("id") == ttcdnId) {
+        if (element.getDomAttribute("id") == ttcdnId) {
             switchTo().frame(element)
         }
 
         val playerSelector = By.tagName(videoTagName)
-        val source = wait.until(elementToBeClickable(playerSelector)).findElement(By.tagName("source")).getAttribute("src")
+        val source = wait.until(elementToBeClickable(playerSelector)).findElement(By.tagName("source")).getDomAttribute("src")
         return if (source.isNullOrBlank()) null else URI.create(source)
     }
 
