@@ -8,7 +8,7 @@ plugins {
     kotlin("plugin.spring") version "2.1.20"
     kotlin("plugin.jpa") version "2.1.20"
 
-    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
