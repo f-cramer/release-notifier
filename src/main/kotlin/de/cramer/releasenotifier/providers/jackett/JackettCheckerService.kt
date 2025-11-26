@@ -50,8 +50,7 @@ class JackettCheckerService(
     private inner class JackettState : State<JackettSearch, JackettRelease> {
         private val created: LocalDateTime = LocalDateTime.now()
 
-        override fun getNewChildren(elements: List<JackettSearch>): List<JackettRelease> =
-            releaseRepository.findAll(JackettReleasesByCreationTimestampSpecification(created))
+        override fun getNewChildren(elements: List<JackettSearch>): List<JackettRelease> = releaseRepository.findAll(JackettReleasesByCreationTimestampSpecification(created))
     }
 
     private data class ResultSource(val result: JackettSearchResult, val releases: List<ReleaseSource>) : HtmlMessageGenerator.Source<JackettContext> {

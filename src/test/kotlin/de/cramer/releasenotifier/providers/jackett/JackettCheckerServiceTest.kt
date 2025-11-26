@@ -75,8 +75,7 @@ class JackettCheckerServiceTest {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun createMessages(newReleases: List<JackettRelease>) =
-        createMessage.invoke(checkerService, newReleases) as List<Message>
+    private fun createMessages(newReleases: List<JackettRelease>) = createMessage.invoke(checkerService, newReleases) as List<Message>
 
     companion object {
         @JvmStatic

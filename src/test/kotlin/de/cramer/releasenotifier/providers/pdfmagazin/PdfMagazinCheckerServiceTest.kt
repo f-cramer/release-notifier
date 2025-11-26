@@ -70,8 +70,7 @@ class PdfMagazinCheckerServiceTest {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun createMessages(newEpisodes: List<PdfMagazinIssue>) =
-        createMessage.invoke(checkerService, newEpisodes) as List<Message>
+    private fun createMessages(newEpisodes: List<PdfMagazinIssue>) = createMessage.invoke(checkerService, newEpisodes) as List<Message>
 
     companion object {
         @JvmStatic

@@ -8,7 +8,7 @@ plugins {
     kotlin("plugin.spring") version "2.1.20"
     kotlin("plugin.jpa") version "2.1.20"
 
-    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
@@ -69,10 +69,12 @@ tasks.withType<Jar> {
 }
 
 ktlint {
-    version.set("1.2.1")
+    version.set("1.8.0")
     additionalEditorconfig.set(
         mapOf(
             "ktlint_code_style" to "intellij_idea",
+            "ktlint_standard_function-expression-body" to "disabled",
+            "ktlint_standard_no-line-break-before-assignment" to "disabled",
         ),
     )
     reporters {

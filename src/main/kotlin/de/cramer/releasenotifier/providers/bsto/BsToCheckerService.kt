@@ -51,8 +51,7 @@ class BsToCheckerService(
     private data class EpisodeSource(val episode: BsToEpisode, val context: BsToContext) : HtmlMessageGenerator.Source<BsToContext> {
         private val links = episode.links.map { LinkSource(it) }
 
-        override fun getText(context: BsToContext) =
-            "${episode.season.number.format(context.seasonNumberLength)}.${episode.number.format(context.episodeNumberLength)} - ${episode.name}"
+        override fun getText(context: BsToContext) = "${episode.season.number.format(context.seasonNumberLength)}.${episode.number.format(context.episodeNumberLength)} - ${episode.name}"
 
         override fun getUrl(context: BsToContext): URI? = null
 
