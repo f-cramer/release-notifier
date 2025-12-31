@@ -12,7 +12,7 @@ import java.io.Serial
 class BsToSeriesByNamesSpecification(
     private val names: Collection<String>,
 ) : Specification<BsToSeries> {
-    override fun toPredicate(root: Root<BsToSeries>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate {
+    override fun toPredicate(root: Root<BsToSeries>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder): Predicate {
         return if (names.isEmpty()) {
             criteriaBuilder.or()
         } else {

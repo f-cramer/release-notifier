@@ -1,23 +1,21 @@
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
-    id("org.springframework.boot") version "3.5.8"
-    id("io.spring.dependency-management") version "1.1.7"
-    kotlin("jvm") version "2.1.20"
-    kotlin("kapt") version "2.1.20"
-    kotlin("plugin.spring") version "2.1.20"
-    kotlin("plugin.jpa") version "2.1.20"
+    id("org.springframework.boot") version "4.0.1"
+    kotlin("jvm") version "2.2.21"
+    kotlin("kapt") version "2.2.21"
+    kotlin("plugin.spring") version "2.2.21"
+    kotlin("plugin.jpa") version "2.2.21"
 
     id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
-    id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    id("dev.detekt") version "2.0.0-alpha.1"
 }
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
 
 val isCi = System.getenv("CI") == "true"
-
-ext["kotlin.version"] = kotlin.coreLibrariesVersion
 
 java {
     toolchain {
@@ -30,22 +28,29 @@ repositories {
 }
 
 dependencies {
+    implementation(enforcedPlatform(SpringBootPlugin.BOM_COORDINATES))
+    kapt(enforcedPlatform(SpringBootPlugin.BOM_COORDINATES))
+    developmentOnly(enforcedPlatform(SpringBootPlugin.BOM_COORDINATES))
+
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-mail")
-    implementation("org.springframework.boot:spring-boot-starter-web") {
-        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
-    }
-    implementation("org.flywaydb:flyway-core")
+    implementation("org.springframework.boot:spring-boot-starter-restclient")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jsoup:jsoup:1.21.2")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.12.0")
     implementation("org.seleniumhq.selenium:selenium-firefox-driver")
     implementation("org.seleniumhq.selenium:selenium-support")
     runtimeOnly("org.postgresql:postgresql")
-    kapt("org.hibernate.orm:hibernate-jpamodelgen")
+    kapt("org.hibernate.orm:hibernate-processor")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-mail-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-restclient-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("com.willowtreeapps.assertk:assertk:0.28.1")
     testImplementation("net.datafaker:datafaker:2.5.3")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
@@ -55,7 +60,7 @@ dependencies {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.addAll(listOf("-Xjsr305=strict", "-Xsuppress-version-warnings"))
+        freeCompilerArgs.addAll(listOf("-Xjsr305=strict", "-Xannotation-default-target=param-property"))
         allWarningsAsErrors = true
     }
 }
@@ -85,14 +90,4 @@ ktlint {
 detekt {
     buildUponDefaultConfig = true
     config.setFrom(files(".config/detekt.yml"))
-}
-
-dependencyManagement {
-    configurations.getByName("detekt") {
-        dependencies {
-            dependencySet("org.jetbrains.kotlin:2.0.21") {
-                entry("kotlin-compiler-embeddable")
-            }
-        }
-    }
 }

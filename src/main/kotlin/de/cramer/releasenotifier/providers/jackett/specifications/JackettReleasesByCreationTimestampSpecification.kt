@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 class JackettReleasesByCreationTimestampSpecification(
     private val minimumCreationTimestamp: LocalDateTime,
 ) : Specification<JackettRelease> {
-    override fun toPredicate(root: Root<JackettRelease>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate? {
+    override fun toPredicate(root: Root<JackettRelease>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder): Predicate? {
         return criteriaBuilder.greaterThanOrEqualTo(root.get(JackettRelease_.creationTimestamp), minimumCreationTimestamp)
     }
 

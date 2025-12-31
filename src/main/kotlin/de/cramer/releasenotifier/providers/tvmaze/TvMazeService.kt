@@ -48,7 +48,7 @@ class TvMazeService(
             .toList()
     }
 
-    private fun getShow(id: Long): TvMazeShow = processRequest { restTemplate.getForObject<TvMazeShow>("https://api.tvmaze.com/shows/$id") }
+    private fun getShow(id: Long): TvMazeShow = processRequest { restTemplate.getForObject<TvMazeShow>("https://api.tvmaze.com/shows/$id") ?: error("show with id $id not found") }
 
     private fun getEpisodes(showId: Long): List<TvMazeEpisode> = processRequest { restTemplate.exchange<List<TvMazeEpisode>>("https://api.tvmaze.com/shows/$showId/episodes", HttpMethod.GET).body!! }
 

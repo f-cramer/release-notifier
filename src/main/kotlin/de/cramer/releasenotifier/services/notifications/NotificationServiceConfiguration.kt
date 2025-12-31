@@ -5,7 +5,7 @@ import jakarta.mail.internet.InternetAddress
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.mail.MailProperties
+import org.springframework.boot.mail.autoconfigure.MailProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.mail.javamail.JavaMailSender
@@ -18,8 +18,8 @@ class NotificationServiceConfiguration {
     fun notificationService(
         mailSender: JavaMailSender?,
         mailProperties: MailProperties?,
-        @Value("\${check.recipient.name:#{null}}") recipientName: String?,
-        @Value("\${check.recipient.address:#{null}}") recipientAddress: String?,
+        @Value($$"${check.recipient.name:#{null}}") recipientName: String?,
+        @Value($$"${check.recipient.address:#{null}}") recipientAddress: String?,
     ): NotificationService = if (mailSender == null || mailProperties == null || recipientName == null || recipientAddress == null) {
         LoggingNotificationService()
     } else {
@@ -41,7 +41,7 @@ class NotificationServiceConfiguration {
         override fun notify(message: Message) = mailSender.send {
             val helper = MimeMessageHelper(it)
             if (mailProperties.properties["spring.mail.properties.mail.smtp.from"].isNullOrBlank()) {
-                helper.setFrom(mailProperties.username)
+                mailProperties.username?.let(helper::setFrom)
             }
             helper.setSubject(message.subject)
             helper.setText(message.message, message.html)

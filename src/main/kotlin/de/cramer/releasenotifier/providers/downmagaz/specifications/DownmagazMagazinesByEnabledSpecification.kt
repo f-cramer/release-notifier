@@ -13,7 +13,7 @@ import java.io.Serial
 class DownmagazMagazinesByEnabledSpecification(
     private val enabled: Boolean = true,
 ) : Specification<DownmagazMagazine> {
-    override fun toPredicate(root: Root<DownmagazMagazine>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate {
+    override fun toPredicate(root: Root<DownmagazMagazine>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder): Predicate {
         return Enabler.getPredicate(enabled, root.get(DownmagazMagazine_.enabler), criteriaBuilder)
     }
 
