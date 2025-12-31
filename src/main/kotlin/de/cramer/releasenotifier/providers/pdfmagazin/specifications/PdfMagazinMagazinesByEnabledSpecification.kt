@@ -13,7 +13,7 @@ import java.io.Serial
 class PdfMagazinMagazinesByEnabledSpecification(
     private val enabled: Boolean = true,
 ) : Specification<PdfMagazinMagazine> {
-    override fun toPredicate(root: Root<PdfMagazinMagazine>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate {
+    override fun toPredicate(root: Root<PdfMagazinMagazine>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder): Predicate {
         return Enabler.getPredicate(enabled, root.get(PdfMagazinMagazine_.enabler), criteriaBuilder)
     }
 

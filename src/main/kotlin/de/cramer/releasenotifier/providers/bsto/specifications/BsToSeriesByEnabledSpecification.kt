@@ -13,7 +13,7 @@ import java.io.Serial
 class BsToSeriesByEnabledSpecification(
     private val enabled: Boolean = true,
 ) : Specification<BsToSeries> {
-    override fun toPredicate(root: Root<BsToSeries>, query: CriteriaQuery<*>?, criteriaBuilder: CriteriaBuilder): Predicate {
+    override fun toPredicate(root: Root<BsToSeries>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder): Predicate {
         return Enabler.getPredicate(enabled, root.join(BsToSeries_.enabler), criteriaBuilder)
     }
 
