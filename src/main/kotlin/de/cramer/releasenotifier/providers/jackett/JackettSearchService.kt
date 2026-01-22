@@ -160,6 +160,7 @@ class JackettSearchService(
         private const val JSOUP_CONFIGURATION_KEY = "jackett"
         private val IGNORED_ERROR_DESCRIPTIONS = setOf(
             "The tracker seems to be down.",
+            "System.TimeoutException: The operation was canceled.",
         )
     }
 }
