@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.URI
+import java.net.http.HttpTimeoutException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -59,6 +60,8 @@ class PdfMagazinMagazineService(
         val (document, statusCode) = try {
             jsoupService.getDocument(this, JSOUP_CONFIGURATION_KEY, ignoreHttpErrors = true)
         } catch (_: SocketTimeoutException) {
+            return null
+        } catch (_: HttpTimeoutException) {
             return null
         } catch (e: IOException) {
             if (e.message == "Underlying input stream returned zero bytes") {
