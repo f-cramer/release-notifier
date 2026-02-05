@@ -51,7 +51,7 @@ class DownmagazMagazineService(
         } catch (_: HttpTimeoutException) {
             return null
         } catch (e: IOException) {
-            if (e.message == "Underlying input stream returned zero bytes") {
+            if (e.message in IGNORED_IO_EXCEPTION_MESSAGES) {
                 return null
             } else {
                 throw e
@@ -81,5 +81,9 @@ class DownmagazMagazineService(
     companion object {
         private const val JSOUP_CONFIGURATION_KEY = "downmagaz"
         private val IGNORED_STATUS_CODES = setOf(500, 503, 521)
+        private val IGNORED_IO_EXCEPTION_MESSAGES = setOf(
+            "Underlying input stream returned zero bytes",
+            "EOF reached while reading",
+        )
     }
 }
