@@ -14,6 +14,7 @@ import java.net.SocketTimeoutException
 import java.net.URI
 import java.time.Duration
 import java.util.Locale
+import javax.net.ssl.SSLHandshakeException
 
 @Service
 class BsToSeriesService(
@@ -122,13 +123,15 @@ class BsToSeriesService(
             return jsoupService.getDocument(this, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(1)).document
         } catch (_: SocketTimeoutException) {
             return null
+        } catch (_: SSLHandshakeException) {
+            return null
         } catch (e: SocketException) {
-            if (e.message == "Connection reset") {
+            if (e.message in IGNORED_SOCKET_EXCEPTION_MESSAGES) {
                 return null
             }
             throw e
         } catch (e: IOException) {
-            if (e.message == "Underlying input stream returned zero bytes") {
+            if (e.message in IGNORED_IO_EXCEPTION_MESSAGES) {
                 return null
             }
             throw e
@@ -143,5 +146,13 @@ class BsToSeriesService(
         private val SEASON_URL_REGEX = """https://bs.to/serie/([^/]+)/(\d+)/([^/]+)/?""".toRegex()
 
         private val IGNORED_ERROR_BODY_REGEX = """Database connection could not be established: SQLSTATE\[[A-Z0-9]+] \[\d+] Too many connections""".toRegex()
+
+        private val IGNORED_SOCKET_EXCEPTION_MESSAGES = setOf(
+            "Connection reset",
+        )
+        private val IGNORED_IO_EXCEPTION_MESSAGES = setOf(
+            "Connection reset",
+            "Underlying input stream returned zero bytes",
+        )
     }
 }
