@@ -55,7 +55,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-restclient-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("com.willowtreeapps.assertk:assertk:0.28.1")
-    testImplementation("net.datafaker:datafaker:2.5.3")
+    testImplementation("net.datafaker:datafaker:2.5.4")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
     testRuntimeOnly("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
