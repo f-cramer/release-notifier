@@ -87,6 +87,9 @@ class PdfMagazinMagazineService(
     companion object {
         private const val JSOUP_CONFIGURATION_KEY = "pdfmagazin"
         private val DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.US)
-        private val IGNORED_STATUS_CODES = emptySet<Int>()
+        private val IGNORED_STATUS_CODES = setOf(
+            521, // Cloudflare error "Web server is down"
+            522, // Cloudflare error "Connection timed out"
+        )
     }
 }
