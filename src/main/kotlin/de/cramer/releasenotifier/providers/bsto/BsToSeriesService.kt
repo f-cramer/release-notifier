@@ -12,6 +12,7 @@ import java.io.IOException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.URI
+import java.net.http.HttpTimeoutException
 import java.time.Duration
 import java.util.Locale
 import javax.net.ssl.SSLHandshakeException
@@ -121,6 +122,8 @@ class BsToSeriesService(
     private fun URI.getDocument(): Document? {
         try {
             return jsoupService.getDocument(this, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(1)).document
+        } catch (_: HttpTimeoutException) {
+            return null
         } catch (_: SocketTimeoutException) {
             return null
         } catch (_: SSLHandshakeException) {
