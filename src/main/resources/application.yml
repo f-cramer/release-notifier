@@ -3,3 +3,9 @@ spring:
     locations:
       - classpath:db/migration
       - classpath:db/{vendor}/migration
+
+  jpa:
+    properties:
+      hibernate:
+        type:
+          preferred_duration_jdbc_type: INTERVAL_SECOND

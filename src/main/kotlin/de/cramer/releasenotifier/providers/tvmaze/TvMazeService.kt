@@ -29,9 +29,17 @@ class TvMazeService(
     fun getNewEpisodes(integration: TvMazeIntegration): List<TvMazeNewEpisode> {
         val show = getShow(integration.showId)
         val lastCheckedDate = integration.lastCheckedDate
+        val airstampOffset = integration.airstampOffset
 
         val episodes = run {
             var episodes = getEpisodes(show.id).filter { it.airstamp != null }
+
+            if (airstampOffset != null) {
+                episodes = episodes.map {
+                    it.copy(airstamp = it.airstamp!!.plus(airstampOffset))
+                }
+            }
+
             if (lastCheckedDate != null) {
                 episodes = episodes.filter { it.airstamp!!.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate() >= lastCheckedDate }
             }
