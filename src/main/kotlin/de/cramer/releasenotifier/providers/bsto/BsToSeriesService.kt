@@ -155,6 +155,7 @@ class BsToSeriesService(
         )
         private val IGNORED_IO_EXCEPTION_MESSAGES = setOf(
             "Connection reset",
+            "EOF reached while reading",
             "Underlying input stream returned zero bytes",
         )
     }
