@@ -48,7 +48,7 @@ class JackettSearchService(
         if (tvMazeIntegration != null) {
             search.subSearches += tvMazeService.getNewEpisodes(tvMazeIntegration).mapNotNull {
                 val show = UriComponentsBuilder.fromUri(search.url).build(true).queryParams.getFirst("q")?.let { q -> UriUtils.decode(q, StandardCharsets.UTF_8) } ?: it.show
-                val request = String.format(Locale.ROOT, "%s S%02dE%02d", show, it.season, it.episode)
+                val request = String.format(Locale.ROOT, "%s %s", show, createEpisodePattern(it.season, it.episode))
                 val uri = UriComponentsBuilder.fromUri(search.url).replaceQueryParam("q", UriUtils.encodeQueryParam(request, StandardCharsets.UTF_8)).build(true).toUri()
                 val airDate = it.airstamp.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate()
                 val enablerEnd = maxOf(airDate.plusDays(2), LocalDate.now())
@@ -66,15 +66,15 @@ class JackettSearchService(
         }
 
         if (search.subSearches.isEmpty()) {
-            doUpdate(search, search.url)
+            doUpdate(search, search.url, null)
         } else {
             search.subSearches.asSequence()
                 .filter { it.enabler.enabled }
-                .forEach { subSearch -> doUpdate(subSearch.search, subSearch.url) }
+                .forEach { subSearch -> doUpdate(subSearch.search, subSearch.url, Regex.escape(createEpisodePattern(subSearch.season, subSearch.episode)).toRegex(RegexOption.IGNORE_CASE)) }
         }
     }
 
-    private fun doUpdate(search: JackettSearch, uri: URI) {
+    private fun doUpdate(search: JackettSearch, uri: URI, additionalFilter: Regex?) {
         val (document, statusCode) = try {
             jsoupService.getDocument(uri, JSOUP_CONFIGURATION_KEY, timeout = Duration.ofMinutes(2), ignoreHttpErrors = true)
         } catch (_: SocketTimeoutException) {
@@ -103,17 +103,17 @@ class JackettSearchService(
         val replacements = search.replacements.mapKeys { (k, _) -> k.toRegex(RegexOption.IGNORE_CASE) }
 
         document.select("item").forEach { element ->
-            search.addRelease(element, ignore, namePrefix, nameSuffix, replacements)
+            search.addRelease(element, ignore, namePrefix, nameSuffix, replacements, additionalFilter)
         }
     }
 
-    private fun JackettSearch.addRelease(element: Element, ignore: Regex?, namePrefix: Regex?, nameSuffix: Regex?, replacements: Map<Regex, String>) {
+    private fun JackettSearch.addRelease(element: Element, ignore: Regex?, namePrefix: Regex?, nameSuffix: Regex?, replacements: Map<Regex, String>, additionalFilter: Regex?) {
         val title = element.selectFirst("title")!!.text()
         if (ignore != null && ignore.matches(title)) {
             return
         }
 
-        val resultName = title.getResultName(namePrefix, nameSuffix, replacements) ?: return
+        val resultName = title.getResultName(namePrefix, nameSuffix, replacements, additionalFilter) ?: return
         val links = sequenceOf(
             element.select("comments").eachText(),
             element.select("guid").eachText(),
@@ -144,7 +144,7 @@ class JackettSearchService(
         }
     }
 
-    private fun String.getResultName(namePrefix: Regex?, nameSuffix: Regex?, replacements: Map<Regex, String>): String? {
+    private fun String.getResultName(namePrefix: Regex?, nameSuffix: Regex?, replacements: Map<Regex, String>, additionalFilter: Regex?): String? {
         var t = this
         if (namePrefix != null) {
             namePrefix.matchAt(t, 0)?.let { t = t.substring(it.range.last + 1) } ?: return null
@@ -152,9 +152,14 @@ class JackettSearchService(
         if (nameSuffix != null) {
             nameSuffix.findAll(t).lastOrNull()?.takeIf { it.range.last == t.length - 1 }?.let { t = t.substring(0, it.range.first) } ?: return null
         }
+        if (additionalFilter != null && !additionalFilter.containsMatchIn(t)) {
+            return null
+        }
         replacements.forEach { (regex, replacement) -> t = regex.replace(t, replacement) }
         return t.trim()
     }
+
+    private fun createEpisodePattern(season: Int, episode: Int): String = String.format(Locale.ROOT, "S%02dE%02d", season, episode)
 
     companion object {
         private const val JSOUP_CONFIGURATION_KEY = "jackett"
