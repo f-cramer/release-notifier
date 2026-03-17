@@ -108,7 +108,7 @@ class JackettSearchService(
     }
 
     private fun JackettSearch.addRelease(element: Element, ignore: Regex?, namePrefix: Regex?, nameSuffix: Regex?, replacements: Map<Regex, String>, additionalFilter: Regex?) {
-        val title = element.selectFirst("title")!!.text()
+        val title = element.selectFirst("title")?.text() ?: return
         if (ignore != null && ignore.matches(title)) {
             return
         }
