@@ -66,6 +66,8 @@ class ZDateBetweenEnabler(
     override val enabled: Boolean
         get() {
             val today = LocalDate.now()
+            val start = start
+            val end = end
             return (start == null || start <= today) && (end == null || end >= today)
         }
 }
