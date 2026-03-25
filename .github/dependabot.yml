@@ -7,10 +7,6 @@ updates:
       interval: daily
     open-pull-requests-limit: 9999
     groups:
-      spring:
-        patterns:
-          - "org.springframework.boot*"
-          - "org.springframework*"
       kotlin:
         patterns:
           - "org.jetbrains.kotlin*"
