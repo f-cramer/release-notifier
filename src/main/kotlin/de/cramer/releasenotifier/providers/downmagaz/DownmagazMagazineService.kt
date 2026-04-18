@@ -80,7 +80,12 @@ class DownmagazMagazineService(
 
     companion object {
         private const val JSOUP_CONFIGURATION_KEY = "downmagaz"
-        private val IGNORED_STATUS_CODES = setOf(500, 503, 521)
+        private val IGNORED_STATUS_CODES = setOf(
+            500,
+            503,
+            521, // Cloudflare error "Web server is down"
+            522, // Cloudflare error "Connection timed out"
+        )
         private val IGNORED_IO_EXCEPTION_MESSAGES = setOf(
             "Underlying input stream returned zero bytes",
             "EOF reached while reading",
