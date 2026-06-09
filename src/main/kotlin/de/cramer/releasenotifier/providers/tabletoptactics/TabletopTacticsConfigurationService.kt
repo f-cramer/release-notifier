@@ -83,36 +83,7 @@ class TabletopTacticsConfigurationService(
 
                 successiveTimeouts = 0
             } catch (e: Exception) {
-                if (e.message?.startsWith("Reached error page: about:neterror") == true) {
-                    // ignore
-                } else {
-                    @Suppress("InstanceOfCheckForException")
-                    if (e is TimeoutException) {
-                        if (successiveTimeouts <= 1) {
-                            successiveTimeouts++
-                            log.trace(e.message, e)
-                            return
-                        }
-                    } else {
-                        successiveTimeouts = 0
-                    }
-
-                    val now = LocalDateTime.now().format(FILE_DATE_FORMATTER)
-                    try {
-                        val screenshot = driver.getFullPageScreenshotAs(OutputType.FILE)
-                        screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
-                        screenshot.delete()
-                    } catch (e: Exception) {
-                        log.error("error creating screenshot", e)
-                    }
-                    try {
-                        val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
-                        driver.pageSource?.let(pageSourceFile::writeText)
-                    } catch (e: Exception) {
-                        log.error("error creating page source file", e)
-                    }
-                    throw e
-                }
+                processException(e, driver)
             } finally {
                 driver.quit()
             }
@@ -227,6 +198,39 @@ class TabletopTacticsConfigurationService(
         val playerSelector = By.tagName(videoTagName)
         val source = wait.until(elementToBeClickable(playerSelector)).findElement(By.tagName("source")).getDomAttribute("src")
         return if (source.isNullOrBlank()) null else URI.create(source)
+    }
+
+    private fun processException(e: Exception, driver: FirefoxDriver) {
+        if (e.message?.startsWith("Reached error page: about:neterror") == true) {
+            // ignore
+        } else {
+            @Suppress("InstanceOfCheckForException")
+            if (e is TimeoutException) {
+                if (successiveTimeouts <= 1) {
+                    successiveTimeouts++
+                    log.trace(e.message, e)
+                    return
+                }
+            } else {
+                successiveTimeouts = 0
+            }
+
+            val now = LocalDateTime.now().format(FILE_DATE_FORMATTER)
+            try {
+                val screenshot = driver.getFullPageScreenshotAs(OutputType.FILE)
+                screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
+                screenshot.delete()
+            } catch (e: Exception) {
+                log.error("error creating screenshot", e)
+            }
+            try {
+                val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
+                driver.pageSource?.let(pageSourceFile::writeText)
+            } catch (e: Exception) {
+                log.error("error creating page source file", e)
+            }
+            throw e
+        }
     }
 
     companion object {
