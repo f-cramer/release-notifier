@@ -34,7 +34,7 @@ import kotlin.concurrent.withLock
 
 @Service
 class TabletopTacticsConfigurationService(
-    @Value("\${selenium.firefox.binary-path:#{null}}") private val firefoxBinaryPath: String?,
+    @Value($$"${selenium.firefox.binary-path:#{null}}") private val firefoxBinaryPath: String?,
     private val log: Logger,
 ) {
     private val lock = ReentrantLock()
