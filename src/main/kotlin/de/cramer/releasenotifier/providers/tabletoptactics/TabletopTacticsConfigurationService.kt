@@ -98,11 +98,19 @@ class TabletopTacticsConfigurationService(
                     }
 
                     val now = LocalDateTime.now().format(FILE_DATE_FORMATTER)
-                    val screenshot = driver.getFullPageScreenshotAs(OutputType.FILE)
-                    screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
-                    screenshot.delete()
-                    val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
-                    driver.pageSource?.let(pageSourceFile::writeText)
+                    try {
+                        val screenshot = driver.getFullPageScreenshotAs(OutputType.FILE)
+                        screenshot.copyTo(File("tabletop-tactics-$now-screenshot.png"))
+                        screenshot.delete()
+                    } catch (e: Exception) {
+                        log.error("error creating screenshot", e)
+                    }
+                    try {
+                        val pageSourceFile = File("tabletop-tactics-$now-page-source.html")
+                        driver.pageSource?.let(pageSourceFile::writeText)
+                    } catch (e: Exception) {
+                        log.error("error creating page source file", e)
+                    }
                     throw e
                 }
             } finally {
