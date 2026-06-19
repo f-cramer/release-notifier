@@ -148,7 +148,7 @@ class BsToSeriesService(
         private val SERIES_URL_REGEX = """https://bs.to/serie/([^/]+)/([^/]+)/?""".toRegex()
         private val SEASON_URL_REGEX = """https://bs.to/serie/([^/]+)/(\d+)/([^/]+)/?""".toRegex()
 
-        private val IGNORED_ERROR_BODY_REGEX = """Database connection could not be established: SQLSTATE\[[A-Z0-9]+] \[\d+] Too many connections""".toRegex()
+        private val IGNORED_ERROR_BODY_REGEX = """Database connection could not be established: SQLSTATE\[[A-Z0-9]+] \[\d+] .*""".toRegex()
 
         private val IGNORED_SOCKET_EXCEPTION_MESSAGES = setOf(
             "Connection reset",
