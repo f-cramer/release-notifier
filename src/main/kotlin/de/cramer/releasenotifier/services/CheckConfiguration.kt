@@ -24,7 +24,7 @@ class CheckConfiguration(
     private val log: Logger,
 ) {
 
-    @Scheduled(cron = "\${check.schedule:-}")
+    @Scheduled(cron = $$"${check.schedule:-}")
     fun check() {
         checkerServices.map {
             executor.submit(
