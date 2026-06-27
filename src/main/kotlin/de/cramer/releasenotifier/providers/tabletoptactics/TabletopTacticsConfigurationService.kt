@@ -157,7 +157,7 @@ class TabletopTacticsConfigurationService(
     }
 
     private fun WebDriver.getYoutubeUrl(): URI? {
-        val uri = findElements(By.className("perfmatters-lazy-youtube"))
+        val uri = findElements(By.cssSelector(".perfmatters-lazy-video, .perfmatters-lazy-youtube"))
             .firstOrNull()
             ?.getDomAttribute("data-src")
             ?.runCatching(URI::create)
