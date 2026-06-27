@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.URI
-import java.net.http.HttpConnectTimeoutException
 import java.net.http.HttpTimeoutException
 
 @Service
