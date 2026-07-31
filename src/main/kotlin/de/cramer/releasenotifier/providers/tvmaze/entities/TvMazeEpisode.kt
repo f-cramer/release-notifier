@@ -6,6 +6,6 @@ data class TvMazeEpisode(
     val id: Long,
     val name: String,
     val season: Int,
-    val number: Int,
+    val number: Int?,
     val airstamp: ZonedDateTime?,
 )

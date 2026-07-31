@@ -33,6 +33,7 @@ class TvMazeService(
 
         val episodes = run {
             var episodes = getEpisodes(show.id).filter { it.airstamp != null }
+                .filter { it.number != null } // number == null => special episode
 
             if (airstampOffset != null) {
                 episodes = episodes.map {
@@ -52,13 +53,13 @@ class TvMazeService(
             .sortedWith(compareBy<TvMazeEpisode> { it.season }.thenBy { it.number })
             .distinct()
             .filter { it.airstamp!!.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate() <= today }
-            .map { TvMazeNewEpisode(show.name, it.name, it.season, it.number, it.airstamp!!) }
+            .map { TvMazeNewEpisode(show.name, it.name, it.season, it.number!!, it.airstamp!!) }
             .toList()
     }
 
     private fun getShow(id: Long): TvMazeShow = processRequest { restTemplate.getForObject<TvMazeShow>("https://api.tvmaze.com/shows/$id") ?: error("show with id $id not found") }
 
-    private fun getEpisodes(showId: Long): List<TvMazeEpisode> = processRequest { restTemplate.exchange<List<TvMazeEpisode>>("https://api.tvmaze.com/shows/$showId/episodes", HttpMethod.GET).body!! }
+    private fun getEpisodes(showId: Long): List<TvMazeEpisode> = processRequest { restTemplate.exchange<List<TvMazeEpisode>>("https://api.tvmaze.com/shows/$showId/episodes?specials=1", HttpMethod.GET).body!! }
 
     private fun <T> processRequest(request: () -> T): T = requestLock.withLock {
         var response: T? = null
