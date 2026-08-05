@@ -3,10 +3,10 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
     id("org.springframework.boot") version "4.0.7"
-    id("org.jetbrains.kotlin.jvm") version "2.3.21"
-    id("org.jetbrains.kotlin.kapt") version "2.3.21"
-    id("org.jetbrains.kotlin.plugin.spring") version "2.3.21"
-    id("org.jetbrains.kotlin.plugin.jpa") version "2.3.21"
+    id("org.jetbrains.kotlin.jvm") version "2.4.10"
+    id("org.jetbrains.kotlin.kapt") version "2.4.10"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.4.10"
+    id("org.jetbrains.kotlin.plugin.jpa") version "2.4.10"
 
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("dev.detekt") version "2.0.0-alpha.5"
@@ -63,7 +63,7 @@ dependencies {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.addAll(listOf("-Xjsr305=strict", "-Xannotation-default-target=param-property"))
+        freeCompilerArgs.add("-Xjsr305=strict")
         allWarningsAsErrors = true
     }
 }
