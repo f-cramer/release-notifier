@@ -9,7 +9,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.jpa") version "2.4.10"
 
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    id("dev.detekt") version "2.0.0-alpha.5"
+    id("dev.detekt") version "2.0.0-alpha.6"
 }
 
 group = "com.example"
