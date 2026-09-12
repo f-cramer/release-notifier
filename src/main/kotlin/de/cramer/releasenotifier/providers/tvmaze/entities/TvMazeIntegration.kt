@@ -13,6 +13,8 @@ class TvMazeIntegration(
     var lastCheckedDate: LocalDate?,
     @Column(name = "tvmaze_airstamp_offset")
     var airstampOffset: Duration?,
+    @Column(name = "tvmaze_enabled")
+    var enabled: Boolean = true,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -23,6 +25,7 @@ class TvMazeIntegration(
         if (showId != other.showId) return false
         if (lastCheckedDate != other.lastCheckedDate) return false
         if (airstampOffset != other.airstampOffset) return false
+        if (enabled != other.enabled) return false
 
         return true
     }
@@ -31,6 +34,7 @@ class TvMazeIntegration(
         var result = showId.hashCode()
         result = 31 * result + (lastCheckedDate?.hashCode() ?: 0)
         result = 31 * result + (airstampOffset?.hashCode() ?: 0)
+        result = 31 * result + enabled.hashCode()
         return result
     }
 }

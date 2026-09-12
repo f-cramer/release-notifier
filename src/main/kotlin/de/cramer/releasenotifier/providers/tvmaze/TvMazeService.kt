@@ -3,6 +3,7 @@ package de.cramer.releasenotifier.providers.tvmaze
 import de.cramer.releasenotifier.providers.tvmaze.entities.TvMazeEpisode
 import de.cramer.releasenotifier.providers.tvmaze.entities.TvMazeIntegration
 import de.cramer.releasenotifier.providers.tvmaze.entities.TvMazeNewEpisode
+import de.cramer.releasenotifier.providers.tvmaze.entities.TvMazeSeason
 import de.cramer.releasenotifier.providers.tvmaze.entities.TvMazeShow
 import de.cramer.releasenotifier.utils.TimedLock
 import org.slf4j.Logger
@@ -29,22 +30,14 @@ class TvMazeService(
     fun getNewEpisodes(integration: TvMazeIntegration): List<TvMazeNewEpisode> {
         val show = getShow(integration.showId)
         val lastCheckedDate = integration.lastCheckedDate
-        val airstampOffset = integration.airstampOffset
 
         val episodes = run {
-            var episodes = getEpisodes(show.id).filter { it.airstamp != null }
-                .filter { it.number != null } // number == null => special episode
-
-            if (airstampOffset != null) {
-                episodes = episodes.map {
-                    it.copy(airstamp = it.airstamp!!.plus(airstampOffset))
-                }
-            }
-
+            val episodes = getRegularEpisodes(show.id, integration.airstampOffset)
             if (lastCheckedDate != null) {
-                episodes = episodes.filter { it.airstamp!!.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate() >= lastCheckedDate }
+                episodes.filter { it.airDate >= lastCheckedDate }
+            } else {
+                episodes
             }
-            episodes
         }
 
         val today = LocalDate.now()
@@ -52,14 +45,49 @@ class TvMazeService(
         return episodes.asSequence()
             .sortedWith(compareBy<TvMazeEpisode> { it.season }.thenBy { it.number })
             .distinct()
-            .filter { it.airstamp!!.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate() <= today }
+            .filter { it.airDate <= today }
             .map { TvMazeNewEpisode(show.name, it.name, it.season, it.number!!, it.airstamp!!) }
             .toList()
     }
 
+    private val TvMazeEpisode.airDate: LocalDate
+        get() = airstamp!!.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate()
+
     private fun getShow(id: Long): TvMazeShow = processRequest { restTemplate.getForObject<TvMazeShow>("https://api.tvmaze.com/shows/$id") ?: error("show with id $id not found") }
 
+    private fun getSeasons(showId: Long): List<TvMazeSeason> = processRequest { restTemplate.exchange<List<TvMazeSeason>>("https://api.tvmaze.com/shows/$showId/seasons", HttpMethod.GET).body!! }
+
     private fun getEpisodes(showId: Long): List<TvMazeEpisode> = processRequest { restTemplate.exchange<List<TvMazeEpisode>>("https://api.tvmaze.com/shows/$showId/episodes?specials=1", HttpMethod.GET).body!! }
+
+    fun getShowEndDate(integration: TvMazeIntegration): LocalDate? = getShow(integration.showId).ended
+
+    fun getCurrentSeasonEndDate(integration: TvMazeIntegration): LocalDate? {
+        val today = LocalDate.now()
+        val endDate = getSeasons(integration.showId).asSequence()
+            .filter { it.premiereDate != null && it.premiereDate <= today }
+            .maxByOrNull { it.number }
+            ?.endDate ?: return null
+        val airstampOffset = integration.airstampOffset ?: return endDate
+        return endDate.plusDays(airstampOffset.toDays())
+    }
+
+    fun getNextEpisodeAirDate(integration: TvMazeIntegration): LocalDate? {
+        val today = LocalDate.now()
+        return getRegularEpisodes(integration.showId, integration.airstampOffset).asSequence()
+            .map { it.airDate }
+            .filter { it >= today }
+            .minOrNull()
+    }
+
+    private fun getRegularEpisodes(showId: Long, airstampOffset: Duration?): List<TvMazeEpisode> {
+        val episodes = getEpisodes(showId).filter { it.airstamp != null }
+            .filter { it.number != null } // number == null => special episode
+        return if (airstampOffset != null) {
+            episodes.map { it.copy(airstamp = it.airstamp!!.plus(airstampOffset)) }
+        } else {
+            episodes
+        }
+    }
 
     private fun <T> processRequest(request: () -> T): T = requestLock.withLock {
         var response: T? = null

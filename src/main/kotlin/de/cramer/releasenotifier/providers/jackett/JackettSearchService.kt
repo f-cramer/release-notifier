@@ -45,7 +45,7 @@ class JackettSearchService(
 
     private fun doUpdate(search: JackettSearch) {
         val tvMazeIntegration = search.tvMazeIntegration
-        if (tvMazeIntegration != null) {
+        if (tvMazeIntegration != null && tvMazeIntegration.enabled) {
             search.subSearches += tvMazeService.getNewEpisodes(tvMazeIntegration).mapNotNull {
                 val show = UriComponentsBuilder.fromUri(search.url).build(true).queryParams.getFirst("q")?.let { q -> UriUtils.decode(q, StandardCharsets.UTF_8) } ?: it.show
                 val request = String.format(Locale.ROOT, "%s %s", show, createEpisodePattern(it.season, it.episode))
