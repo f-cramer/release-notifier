@@ -76,7 +76,7 @@ class JackettTvMazeEnablerServiceTest {
 
     @Test
     fun `enabled search is disabled when its current season ended and the air date of its next episode is unknown`() {
-        val search = generateSearch(ZDateBetweenEnabler(LocalDate.now().minusDays(90), null))
+        val search = generateSearch(ZDateBetweenEnabler(LocalDate.now().minusDays(90), null), lastCheckedDate = LocalDate.now())
         val seasonEndDate = LocalDate.now().minusDays(3)
         findAllReturns(search)
         `when`(tvMazeService.getCurrentSeasonEndDate(search.tvMazeIntegration!!)).thenReturn(seasonEndDate)
@@ -90,9 +90,34 @@ class JackettTvMazeEnablerServiceTest {
     @Test
     fun `enabled search is not disabled while its current season is still within the grace period`() {
         val enabler = ZDateBetweenEnabler(LocalDate.now().minusDays(90), null)
-        val search = generateSearch(enabler)
+        val search = generateSearch(enabler, lastCheckedDate = LocalDate.now())
         findAllReturns(search)
         `when`(tvMazeService.getCurrentSeasonEndDate(search.tvMazeIntegration!!)).thenReturn(LocalDate.now().minusDays(2))
+
+        service.updateEnablers()
+
+        assertThat(search.enabler).isEqualTo(enabler)
+    }
+
+    @Test
+    fun `enabled search is not disabled when its current season ended but it has never been checked`() {
+        val enabler = ZBooleanEnabler.TRUE
+        val search = generateSearch(enabler, lastCheckedDate = null)
+        findAllReturns(search)
+        `when`(tvMazeService.getCurrentSeasonEndDate(search.tvMazeIntegration!!)).thenReturn(LocalDate.now().minusDays(90))
+
+        service.updateEnablers()
+
+        assertThat(search.enabler).isEqualTo(enabler)
+    }
+
+    @Test
+    fun `enabled search is not disabled when its current season ended but it has not been checked after the grace period`() {
+        val enabler = ZDateBetweenEnabler(LocalDate.now().minusDays(90), null)
+        val seasonEndDate = LocalDate.now().minusDays(10)
+        val search = generateSearch(enabler, lastCheckedDate = seasonEndDate.plusDays(2))
+        findAllReturns(search)
+        `when`(tvMazeService.getCurrentSeasonEndDate(search.tvMazeIntegration!!)).thenReturn(seasonEndDate)
 
         service.updateEnablers()
 
@@ -112,7 +137,7 @@ class JackettTvMazeEnablerServiceTest {
 
     @Test
     fun `search and its tvmaze integration are disabled when the show has ended`() {
-        val search = generateSearch(ZDateBetweenEnabler(LocalDate.now().minusDays(90), null))
+        val search = generateSearch(ZDateBetweenEnabler(LocalDate.now().minusDays(90), null), lastCheckedDate = LocalDate.now())
         val integration = search.tvMazeIntegration!!
         findAllReturns(search)
         `when`(tvMazeService.getShowEndDate(integration)).thenReturn(LocalDate.now().minusDays(3))
@@ -128,11 +153,26 @@ class JackettTvMazeEnablerServiceTest {
     @Test
     fun `tvmaze integration is kept while the end of the show is still within the grace period`() {
         val enabler = ZDateBetweenEnabler(LocalDate.now().minusDays(90), null)
-        val search = generateSearch(enabler)
+        val search = generateSearch(enabler, lastCheckedDate = LocalDate.now())
         val integration = search.tvMazeIntegration!!
         findAllReturns(search)
         `when`(tvMazeService.getShowEndDate(integration)).thenReturn(LocalDate.now().minusDays(2))
         `when`(tvMazeService.getNextEpisodeAirDate(integration)).thenReturn(LocalDate.now())
+
+        service.updateEnablers()
+
+        assertThat(integration.enabled).isTrue()
+        assertThat(search.enabler).isEqualTo(enabler)
+    }
+
+    @Test
+    fun `search and its tvmaze integration are kept when the show has ended but the search has never been checked`() {
+        val enabler = ZBooleanEnabler.TRUE
+        val search = generateSearch(enabler, lastCheckedDate = null)
+        val integration = search.tvMazeIntegration!!
+        findAllReturns(search)
+        `when`(tvMazeService.getShowEndDate(integration)).thenReturn(LocalDate.now().minusDays(90))
+        `when`(tvMazeService.getCurrentSeasonEndDate(integration)).thenReturn(LocalDate.now().minusDays(90))
 
         service.updateEnablers()
 
@@ -160,10 +200,10 @@ class JackettTvMazeEnablerServiceTest {
         `when`(searchRepository.findAll(any<Specification<JackettSearch>>())).thenReturn(searches.toList())
     }
 
-    private fun generateSearch(enabler: Enabler): JackettSearch {
+    private fun generateSearch(enabler: Enabler, lastCheckedDate: LocalDate? = null): JackettSearch {
         val search = JackettSearch(faker.show().play(), faker.internet().uri())
         search.enabler = enabler
-        search.tvMazeIntegration = TvMazeIntegration(showIds.incrementAndGet(), null, null)
+        search.tvMazeIntegration = TvMazeIntegration(showIds.incrementAndGet(), lastCheckedDate, null)
         return search
     }
 

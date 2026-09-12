@@ -5,6 +5,7 @@ import de.cramer.releasenotifier.entities.ZDateBetweenEnabler
 import de.cramer.releasenotifier.providers.jackett.entities.JackettSearch
 import de.cramer.releasenotifier.providers.jackett.specifications.JackettSearchesWithEnabledTvMazeIntegrationSpecification
 import de.cramer.releasenotifier.providers.tvmaze.TvMazeService
+import de.cramer.releasenotifier.providers.tvmaze.entities.TvMazeIntegration
 import org.slf4j.Logger
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -34,7 +35,7 @@ class JackettTvMazeEnablerService(
         val tvMazeIntegration = search.tvMazeIntegration ?: return
 
         val showEndDate = tvMazeService.getShowEndDate(tvMazeIntegration)
-        if (showEndDate != null && showEndDate.isGracePeriodOver()) {
+        if (showEndDate != null && showEndDate.isGracePeriodOver(tvMazeIntegration)) {
             log.debug("disabling search \"{}\" and its tvmaze integration because its show ended at {}", search.name, showEndDate)
             tvMazeIntegration.enabled = false
             search.enabler = ZBooleanEnabler(false)
@@ -56,7 +57,7 @@ class JackettTvMazeEnablerService(
         }
 
         val seasonEndDate = tvMazeService.getCurrentSeasonEndDate(tvMazeIntegration) ?: return
-        if (seasonEndDate.isGracePeriodOver()) {
+        if (seasonEndDate.isGracePeriodOver(tvMazeIntegration)) {
             log.debug("disabling search \"{}\" because its current season ended at {} and the air date of its next episode is unknown", search.name, seasonEndDate)
             search.enabler = ZBooleanEnabler(false)
         }
@@ -65,7 +66,10 @@ class JackettTvMazeEnablerService(
     private val JackettSearch.isDisabledExplicitly: Boolean
         get() = enabler.let { it is ZBooleanEnabler && !it.enabled }
 
-    private fun LocalDate.isGracePeriodOver(): Boolean = plusDays(GRACE_PERIOD_IN_DAYS) < LocalDate.now()
+    private fun LocalDate.isGracePeriodOver(integration: TvMazeIntegration): Boolean {
+        val lastCheckedDate = integration.lastCheckedDate ?: return false
+        return plusDays(GRACE_PERIOD_IN_DAYS) < lastCheckedDate
+    }
 
     companion object {
         private const val GRACE_PERIOD_IN_DAYS = 2L
