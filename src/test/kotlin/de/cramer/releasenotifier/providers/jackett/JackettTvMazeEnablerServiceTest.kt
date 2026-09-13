@@ -180,6 +180,62 @@ class JackettTvMazeEnablerServiceTest {
     }
 
     @Test
+    fun `tvmaze integration of an explicitly disabled search is disabled when the show has ended`() {
+        val enabler = ZBooleanEnabler(false)
+        val search = generateSearch(enabler, lastCheckedDate = LocalDate.now())
+        val integration = search.tvMazeIntegration!!
+        val showEndDate = LocalDate.now().minusDays(3)
+        findAllReturns(search)
+        `when`(tvMazeService.getShowEndDate(integration)).thenReturn(showEndDate)
+
+        service.updateEnablers()
+
+        assertThat(integration.enabled).isFalse()
+        assertThat(search.enabler).isEqualTo(enabler)
+        verify(tvMazeService, never()).getNextEpisodeAirDate(integration)
+        assertThat(publishedEvents).single().isInstanceOf<Message>().all {
+            prop(Message::subject).isEqualTo("TVMaze integration of search \"${search.name}\" has been disabled")
+            prop(Message::message).contains(showEndDate.toString())
+        }
+    }
+
+    @Test
+    fun `explicitly disabled search is enabled when the show has ended but the search has not been checked after the grace period`() {
+        val showEndDate = LocalDate.now().minusDays(10)
+        val search = generateSearch(ZBooleanEnabler(false), lastCheckedDate = showEndDate.plusDays(2))
+        val integration = search.tvMazeIntegration!!
+        findAllReturns(search)
+        `when`(tvMazeService.getShowEndDate(integration)).thenReturn(showEndDate)
+
+        service.updateEnablers()
+
+        assertThat(integration.enabled).isTrue()
+        assertThat(search.enabler).isInstanceOf<ZBooleanEnabler>()
+            .prop(ZBooleanEnabler::enabled).isTrue()
+        verify(tvMazeService, never()).getNextEpisodeAirDate(integration)
+        assertThat(publishedEvents).single().isInstanceOf<Message>().all {
+            prop(Message::subject).isEqualTo("Search \"${search.name}\" has been enabled")
+            prop(Message::message).contains(showEndDate.toString())
+        }
+    }
+
+    @Test
+    fun `explicitly disabled search is enabled when the show has ended but the search has never been checked`() {
+        val search = generateSearch(ZBooleanEnabler(false), lastCheckedDate = null)
+        val integration = search.tvMazeIntegration!!
+        findAllReturns(search)
+        `when`(tvMazeService.getShowEndDate(integration)).thenReturn(LocalDate.now().minusDays(90))
+
+        service.updateEnablers()
+
+        assertThat(integration.enabled).isTrue()
+        assertThat(search.enabler).isInstanceOf<ZBooleanEnabler>()
+            .prop(ZBooleanEnabler::enabled).isTrue()
+        assertThat(publishedEvents).single().isInstanceOf<Message>()
+            .prop(Message::subject).isEqualTo("Search \"${search.name}\" has been enabled")
+    }
+
+    @Test
     fun `tvmaze integration is kept while the end of the show is still within the grace period`() {
         val enabler = ZDateBetweenEnabler(LocalDate.now().minusDays(90), null)
         val search = generateSearch(enabler, lastCheckedDate = LocalDate.now())

@@ -39,12 +39,30 @@ class JackettTvMazeEnablerService(
 
         val showEndDate = tvMazeService.getShowEndDate(tvMazeIntegration)
         if (showEndDate != null && showEndDate.isGracePeriodOver(tvMazeIntegration)) {
-            notify(
-                "Search \"${search.name}\" has been disabled",
-                "The search \"${search.name}\" and its TVMaze integration have been disabled because its show ended at $showEndDate.",
-            )
+            if (search.isDisabledExplicitly) {
+                notify(
+                    "TVMaze integration of search \"${search.name}\" has been disabled",
+                    "The TVMaze integration of the already disabled search \"${search.name}\" has been disabled because its show ended at $showEndDate.",
+                )
+            } else {
+                notify(
+                    "Search \"${search.name}\" has been disabled",
+                    "The search \"${search.name}\" and its TVMaze integration have been disabled because its show ended at $showEndDate.",
+                )
+                search.enabler = ZBooleanEnabler(false)
+            }
             tvMazeIntegration.enabled = false
-            search.enabler = ZBooleanEnabler(false)
+            return
+        }
+
+        // a disabled search is not checked, so its grace period would never be over
+        // => enable it to catch up on the missed episodes, it will be disabled again once it has been checked
+        if (showEndDate != null && search.isDisabledExplicitly) {
+            notify(
+                "Search \"${search.name}\" has been enabled",
+                "The search \"${search.name}\" has been enabled to catch up on missed episodes because its show ended at $showEndDate. It will be disabled again once it has been checked.",
+            )
+            search.enabler = ZBooleanEnabler(true)
             return
         }
 
